@@ -656,10 +656,9 @@ function renderAnchor() {
   sel.disabled = false;
   const withTeams = owned.filter(id => TEAMS.some(t => teamHasChar(t, id)));
   const without = owned.filter(id => !withTeams.includes(id));
-  sel.innerHTML = `<optgroup label="Has KQM teams">${withTeams.map(id => `<option value="${id}">${esc(nameOf(id))}</option>`).join("")}</optgroup>` +
+  sel.innerHTML = `<option value="">Choose a character…</option><optgroup label="Has KQM teams">${withTeams.map(id => `<option value="${id}">${esc(nameOf(id))}</option>`).join("")}</optgroup>` +
     (without.length ? `<optgroup label="No KQM teams yet (Claude can suggest)">${without.map(id => `<option value="${id}">${esc(nameOf(id))}</option>`).join("")}</optgroup>` : "");
-  const pref = owned.includes(prev) ? prev : (owned.includes("neuvillette") ? "neuvillette" : withTeams[0] || owned[0]);
-  sel.value = pref;
+  sel.value = owned.includes(prev) ? prev : "";
 }
 
 function memberCard(id, opts, slotIdx, anchor, reason, picks) {
@@ -681,7 +680,15 @@ function renderResults() {
   const anchor = $("#anchor").value;
   $("#example-note").classList.toggle("hidden", !isExample);
   $("#ai-results").innerHTML = ""; $("#ai-status").textContent = ""; lastAi = null;
-  if (!anchor) { $("#results").innerHTML = ""; $("#almost").innerHTML = ""; $("#summary").innerHTML = ""; currentCands = []; return; }
+  if (!anchor) {
+    currentCands = [];
+    $("#summary").innerHTML = ""; $("#almost").innerHTML = "";
+    $("#ai-box").classList.add("hidden"); $("#kqm-label").classList.add("hidden");
+    $("#results").innerHTML = Object.keys(roster).length
+      ? `<div class="empty"><p><strong>Pick a character above</strong> to see the best teams you can build for them.</p></div>`
+      : `<div class="empty"><p><strong>Start by marking the characters you own.</strong> Then pick one above to see the teams you can build.</p></div>`;
+    return;
+  }
   const { ready, almost } = findTeams(anchor, roster);
   currentCands = ready.slice(0, 8).map((r, i) => ({ ...r, key: "c" + (i + 1) }));
   const total = TEAMS.filter(t => teamHasChar(t, anchor)).length;
