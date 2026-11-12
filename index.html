@@ -139,7 +139,7 @@ footer { color: var(--muted); font-size: 13px; max-width: 80ch; }
   <header class="top">
     <div>
       <h1>Genshin Team Finder</h1>
-      <p class="lede">Mark the characters you own, pick one, and see the best teams you can build for them right now. Teams come from KeqingMains (KQM) quick guides.</p>
+      <p class="lede">Mark the characters you own, pick one, and see the best teams you can build for them right now.</p>
     </div>
     <span class="credit">Game data up to version 7.2</span>
   </header>
@@ -167,7 +167,7 @@ footer { color: var(--muted); font-size: 13px; max-width: 80ch; }
         <button class="fchip" type="button" id="f-owned" aria-pressed="false">Owned only</button>
       </div>
       <div class="grid" id="grid"></div>
-      <p class="note">Click a name to mark it owned. Click the C badge to set its constellation (some KQM teams need a specific one).</p>
+      <p class="note">Click a name to mark it owned. Click the C badge to set its constellation (some teams need a specific one).</p>
     </section>
 
     <section class="panel find" aria-labelledby="find-h">
@@ -345,14 +345,14 @@ const RAW_TEAMS = [
   ["flins","Lunar-Charged","flins|fischl|columbina|sucrose","Works without Ineffa; Sucrose enables Fischl's Hexerei buffs."],
   ["flins","Lunar-Charged","flins|fischl|columbina|durin","Durin replaces Sucrose for RES shred and damage."],
   ["flins","Lunar-Charged","flins|fischl|mona|jahoda","Mona handles Hydro while Jahoda buffs and heals."],
-  ["flins","Lunar-Charged","flins|iansan/sara|aino|sucrose","An Ineffa-less team with an Electro buffer. KQM's Sara rotation assumes C2."],
+  ["flins","Lunar-Charged","flins|iansan/sara|aino|sucrose","An Ineffa-less team with an Electro buffer. The Sara version assumes C2."],
   ["flins","Lunar-Charged","flins|kuki|aino|lynette/heizou","Kuki's particles keep Flins's Energy needs low."],
   ["flins","Lunar-Charged","flins|fischl/ororon|aino|lanyan","Off-field Electro plus Lan Yan's buffs and shields."],
 
   ["skirk","Freeze","skirk|furina|escoffier|vodyanitsa","Furina, Escoffier and Vodyanitsa combine for Skirk's biggest damage."],
   ["skirk","Freeze","skirk|furina|escoffier|citlali/mualani","Citlali gives a full Scroll buff and a shield."],
   ["skirk","Freeze","skirk|furina|escoffier|mona/shenhe/yelan","A version without Vodyanitsa."],
-  ["skirk","Freeze","skirk|vodyanitsa|escoffier|mona","KQM's strongest team without Furina."],
+  ["skirk","Freeze","skirk|vodyanitsa|escoffier|mona","The strongest team without Furina."],
   ["skirk","Freeze","skirk|furina|charlotte|vodyanitsa","A version without Escoffier."],
   ["skirk","Freeze","skirk|xingqiu|rosaria|vodyanitsa","No Furina or Escoffier; Rosaria adds CRIT Rate."],
   ["skirk","Freeze","skirk|vodyanitsa|rosaria|dahlia","Dahlia adds Attack Speed, Hydro Resonance and a shield."],
@@ -693,8 +693,8 @@ function renderAnchor() {
   sel.disabled = false;
   const withTeams = owned.filter(id => TEAMS.some(t => teamHasChar(t, id)));
   const without = owned.filter(id => !withTeams.includes(id));
-  sel.innerHTML = `<option value="">Choose a character…</option><optgroup label="Has KQM teams">${withTeams.map(id => `<option value="${id}">${esc(nameOf(id))}</option>`).join("")}</optgroup>` +
-    (without.length ? `<optgroup label="No KQM teams yet (Claude can suggest)">${without.map(id => `<option value="${id}">${esc(nameOf(id))}</option>`).join("")}</optgroup>` : "");
+  sel.innerHTML = `<option value="">Choose a character…</option><optgroup label="Has teams">${withTeams.map(id => `<option value="${id}">${esc(nameOf(id))}</option>`).join("")}</optgroup>` +
+    (without.length ? `<optgroup label="No teams yet (Claude can suggest)">${without.map(id => `<option value="${id}">${esc(nameOf(id))}</option>`).join("")}</optgroup>` : "");
   sel.value = owned.includes(prev) ? prev : "";
 }
 
@@ -710,7 +710,7 @@ function memberCard(id, opts, slotIdx, anchor, reason, picks) {
 }
 function srcLine(t) {
   const s = SOURCES[t.src];
-  return `<span class="src">From the <a href="${s.url}">KQM ${esc(s.guide)} quick guide</a>${s.ver ? ` (updated for ${s.ver})` : ""}</span>`;
+  return `<span class="src">Source: <a href="${s.url}">${esc(s.guide)} guide</a>${s.ver ? ` (updated for ${s.ver})` : ""}</span>`;
 }
 
 function renderResults() {
@@ -729,7 +729,7 @@ function renderResults() {
   const { ready, almost } = findTeams(anchor, roster);
   currentCands = ready.slice(0, 8).map((r, i) => ({ ...r, key: "c" + (i + 1) }));
   const total = TEAMS.filter(t => teamHasChar(t, anchor)).length;
-  $("#summary").innerHTML = `<span><strong>${ready.length}</strong> team${ready.length === 1 ? "" : "s"} you can build</span><span><strong>${total}</strong> KQM team${total === 1 ? "" : "s"} include ${esc(nameOf(anchor))}</span>`;
+  $("#summary").innerHTML = `<span><strong>${ready.length}</strong> team${ready.length === 1 ? "" : "s"} you can build</span><span><strong>${total}</strong> team${total === 1 ? "" : "s"} include ${esc(nameOf(anchor))}</span>`;
   $("#kqm-label").classList.toggle("hidden", !ready.length);
 
   $("#results").innerHTML = ready.slice(0, 12).map((r, i) => `<article class="team">
@@ -737,14 +737,14 @@ function renderResults() {
         <span class="row">${i === 0 ? `<span class="tag best">Top match</span>` : ""}${r.team.limited ? `<span class="tag budget">Budget</span>` : ""}</span></div>
       <div class="members">${r.picks.map((id, s) => memberCard(id, r.opts, s, anchor, "", r.picks)).join("")}</div>
       <p class="note">${esc(r.team.note)}</p>${srcLine(r.team)}
-    </article>`).join("") + (ready.length > 12 ? `<p class="note">${ready.length - 12} more teams match. They use options further down KQM's lists.</p>` : "");
+    </article>`).join("") + (ready.length > 12 ? `<p class="note">${ready.length - 12} more teams match. They use lower-ranked options.</p>` : "");
 
   const ai = $("#ai-box");
   if (!ready.length) {
     ai.classList.add("hidden");
     const none = total === 0;
     $("#results").innerHTML = `<div class="empty">
-      <p><strong>${none ? `KQM doesn't have teams for ${esc(nameOf(anchor))} in this site's data yet.` : `None of the ${total} KQM teams with ${esc(nameOf(anchor))} can be filled from your roster.`}</strong></p>
+      <p><strong>${none ? `There are no teams for ${esc(nameOf(anchor))} in this site's data yet.` : `None of the ${total} teams with ${esc(nameOf(anchor))} can be filled from your roster.`}</strong></p>
       <p class="note">${none ? "Claude can suggest a team from your roster instead. It will be labeled as an AI suggestion, not a tested team." : "See the teams below that are one character away, or ask Claude for a suggestion from what you own."}</p>
       <div class="row"><button type="button" class="btn primary" id="fallback-btn">Ask Claude for a team</button></div>
       <p class="status" id="fallback-status" role="status" aria-live="polite"></p>
@@ -796,7 +796,7 @@ async function askJson(sample, prompt, opts) {
 function aiErr(e) {
   if (e && e.code === "not_granted") return "Claude isn't available for this page right now.";
   if (e && e.code === "rate_limited") return "Claude is busy. Wait a minute and try again.";
-  return "Claude's answer didn't match your roster, so it wasn't shown. The KQM teams below are still accurate.";
+  return "Claude's answer didn't match your roster, so it wasn't shown. The teams below are still accurate.";
 }
 
 function rosterText() {
@@ -808,7 +808,7 @@ async function runRank() {
   const btn = $("#ai-btn"), st = $("#ai-status");
   if (!currentCands.length) return;
   const sample = await getSample();
-  if (!sample) { st.textContent = "Claude isn't available here. The KQM teams below still work."; return; }
+  if (!sample) { st.textContent = "Claude isn't available here. The teams below still work."; return; }
   btn.disabled = true; st.classList.remove("err"); st.textContent = "Asking Claude…";
   const cands = currentCands.map(c => ({
     id: c.key, archetype: c.team.arch, kqm_note: c.team.note, budget: c.team.limited,
@@ -848,7 +848,7 @@ Reply with JSON only, in exactly this shape:
         ${srcLine(r.cand.team)}
       </article>`;
     }).join("");
-    st.textContent = "Explanations are written by Claude from KQM's team data. Check the linked guide for rotations.";
+    st.textContent = "Explanations are written by Claude from the team data. Check the linked guide for rotations.";
   } catch (e) {
     st.classList.add("err"); st.textContent = aiErr(e);
   } finally { btn.disabled = false; }
@@ -869,15 +869,15 @@ Rules:
 Reply with JSON only: {"summary":"...","members":[{"id":"...","reason":"..."},{"id":"...","reason":"..."},{"id":"...","reason":"..."},{"id":"...","reason":"..."}]}`;
   try {
     const v = validateFallback(await askJson(sample, prompt, { modelTier: "default" }), roster, anchor);
-    if (!v) { st.textContent = `Claude doesn't know ${nameOf(anchor)}'s kit well enough to suggest a team. Check KQM's site for a guide.`; return; }
+    if (!v) { st.textContent = `Claude doesn't know ${nameOf(anchor)}'s kit well enough to suggest a team. Check the guides for this character.`; return; }
     const picks = v.members.map(m => m.id);
     out.innerHTML = `<article class="team ai">
-      <div class="team-head"><h3>AI suggestion · ${picks.map(nameOf).map(esc).join(", ")}</h3><span class="tag">Not from a KQM guide</span></div>
+      <div class="team-head"><h3>AI suggestion · ${picks.map(nameOf).map(esc).join(", ")}</h3><span class="tag">Not from a guide</span></div>
       ${v.summary ? `<p class="note">${esc(v.summary)}</p>` : ""}
       <div class="members">${v.members.map(m => memberCard(m.id, null, 0, anchor, m.reason, picks)).join("")}</div>
     </article>`;
-    st.textContent = "Written by Claude from your roster, not tested by KQM. Treat it as a starting point.";
-  } catch (e) { st.classList.add("err"); st.textContent = aiErr(e).replace(" The KQM teams below are still accurate.", ""); }
+    st.textContent = "Written by Claude from your roster, not taken from a guide. Treat it as a starting point.";
+  } catch (e) { st.classList.add("err"); st.textContent = aiErr(e).replace(" The teams below are still accurate.", ""); }
   finally { btn.disabled = false; }
 }
 
