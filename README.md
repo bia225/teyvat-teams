@@ -9,7 +9,7 @@ Team data comes from [KeqingMains (KQM)](https://keqingmains.com/) quick guides,
 - Roster picker with constellations, saved in your browser
 - Best owned team per KQM archetype, with swap options for each slot
 - "One character away" teams that show what you're missing
-- Screenshot import: reads character names from screenshots (like your HoYoLAB character list) right in your browser with Tesseract.js, nothing is uploaded
+- Screenshot import: reads character names and constellations from HoYoLAB character-list screenshots right in your browser (Tesseract.js for names, the corner badge for constellations); nothing is uploaded
 - On claude.ai only: Claude reads screenshots instead, and can explain each team pick
 
 ## Run it
