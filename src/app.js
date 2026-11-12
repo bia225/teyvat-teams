@@ -10,27 +10,18 @@ const elVar = el => `var(--${el})`;
 const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
 
 const STORE_KEY = "gtf-roster-v1";
-const EXAMPLE_ROSTER = {
-  "traveler-anemo": 0, "traveler-geo": 0, "traveler-electro": 0, "traveler-dendro": 0, "traveler-hydro": 0, "traveler-pyro": 0,
-  amber: 6, kaeya: 6, lisa: 6, xiangling: 6, bennett: 5, xingqiu: 6, fischl: 6, sucrose: 6, beidou: 4, noelle: 6, chongyun: 4, collei: 6,
-  kirara: 3, kuki: 4, aino: 2, lanyan: 3, kachina: 4, iansan: 2, ororon: 1, chevreuse: 3, layla: 4, yaoyao: 2, dahlia: 1, charlotte: 2,
-  rosaria: 2, neuvillette: 0, furina: 0, kazuha: 0, zhongli: 0, nahida: 0, xilonen: 0, ineffa: 0, columbina: 0, mavuika: 0, citlali: 0,
-  escoffier: 0, jean: 1, mona: 1, diluc: 0, qiqi: 0, keqing: 1, tighnari: 0, dehya: 0, yelan: 0, flins: 0,
-};
 
-const state = { roster: {}, isExample: false, filterEl: null, ownedOnly: false, query: "", candidates: [] };
+const state = { roster: {}, filterEl: null, ownedOnly: false, query: "", candidates: [] };
 
 // ---------- roster storage ----------
 function loadRoster() {
   try {
     const raw = localStorage.getItem(STORE_KEY);
-    if (raw) { state.roster = JSON.parse(raw) || {}; state.isExample = false; return; }
-  } catch (e) { /* storage unavailable: fall through to the example */ }
-  state.roster = Object.fromEntries(Object.entries(EXAMPLE_ROSTER).filter(([id]) => db.byId[id]));
-  state.isExample = true;
+    const saved = raw ? JSON.parse(raw) : null;
+    state.roster = saved && typeof saved === "object" ? Object.fromEntries(Object.entries(saved).filter(([id]) => db.byId[id])) : {};
+  } catch (e) { state.roster = {}; /* storage unavailable: start empty */ }
 }
 function saveRoster() {
-  state.isExample = false;
   try { localStorage.setItem(STORE_KEY, JSON.stringify(state.roster)); } catch (e) { /* keep working without storage */ }
 }
 
@@ -111,7 +102,6 @@ function teamTitle(arch, ids) { return `${esc(arch)} · ${ids.map(nameOf).map(es
 
 function renderResults() {
   const anchor = $("#anchor").value;
-  $("#example-note").classList.toggle("hidden", !state.isExample);
   $("#ai-results").innerHTML = "";
   $("#ai-status").textContent = "";
   if (!anchor) {
@@ -120,7 +110,7 @@ function renderResults() {
     $("#ai-box").classList.add("hidden"); $("#teams-label").classList.add("hidden");
     $("#results").innerHTML = Object.keys(state.roster).length
       ? `<div class="empty"><p><strong>Pick a character above</strong> to see the best teams you can build for them.</p></div>`
-      : `<div class="empty"><p><strong>Start by marking the characters you own.</strong> Then pick one above to see the teams you can build.</p></div>`;
+      : `<div class="empty"><p><strong>Start by adding the characters you own.</strong> Import screenshots or tick them in the list, then pick one above to see the teams you can build.</p></div>`;
     return;
   }
   const { ready, almost } = findTeams(anchor, state.roster);
@@ -231,7 +221,6 @@ async function importShots(fileList) {
   const st = $("#import-status");
   st.classList.remove("err");
   const setStatus = t => { st.textContent = t; };
-  if (state.isExample) state.roster = {};
   try {
     if (await canReadImages()) {
       const r = await readScreenshotsWithClaude(files, state.roster, setStatus);

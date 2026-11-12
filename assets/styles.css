@@ -88,7 +88,6 @@ input[type="search"] { width: 100%; padding: 8px 10px; border: 1px solid var(--l
 .pick label { font-weight: 600; }
 .pick-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .pick-row select { flex: 1 1 220px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); }
-.example { background: var(--accent-soft); border-radius: 8px; padding: 8px 12px; font-size: 14px; }
 
 .summary { display: flex; flex-wrap: wrap; gap: 8px 16px; color: var(--muted); font-size: 14px; }
 .summary strong { color: var(--ink); font-variant-numeric: tabular-nums; }
