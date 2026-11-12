@@ -152,7 +152,7 @@ footer { color: var(--muted); font-size: 13px; max-width: 80ch; }
       </div>
 
       <div class="drop" id="drop">
-        <p><strong>Import from screenshots.</strong> Upload or paste screenshots of your character list. Screens that show character names work best (for example your HoYoLAB character list). You can fix anything Claude misreads below.</p>
+        <p id="drop-text"><strong>Import from screenshots.</strong> Upload or paste screenshots of your character list. Screens that show character names work best (for example your HoYoLAB character list). You can fix anything Claude misreads below.</p>
         <div class="row">
           <label class="btn primary" for="shots">Choose screenshots</label>
           <input id="shots" type="file" accept="image/*" multiple class="hidden">
@@ -588,6 +588,43 @@ function matchName(raw) {
   for (const c of CHARS) { const last = norm(c[1].split(" ").pop()); if (c[1].includes(" ") && last === n) return c[0]; }
   return null;
 }
+// Finds character names in OCR text (used when Claude isn't available, e.g. on GitHub Pages).
+const OCR_NAMES = (() => {
+  const list = [];
+  const words = s => s.toLowerCase().normalize("NFKD").replace(/[^a-z]+/g, " ").trim().split(" ").filter(Boolean);
+  for (const c of CHARS) if (!c[0].startsWith("traveler")) list.push({ words: words(c[1]), id: c[0] });
+  const extra = { "Kaedehara Kazuha": "kazuha", "Kamisato Ayaka": "ayaka", "Kamisato Ayato": "ayato", "Sangonomiya Kokomi": "kokomi",
+    "Shikanoin Heizou": "heizou", "Yumemizuki Mizuki": "mizuki", "Arataki Itto": "itto", "Raiden Shogun": "raiden", "Kujou Sara": "sara",
+    "Childe": "tartaglia", "Yae Miko": "yae", "Nicole Reeyn": "nicole", "Hu Tao": "hutao" };
+  for (const [k, v] of Object.entries(extra)) list.push({ words: words(k), id: v });
+  return list.sort((a, b) => b.words.length - a.words.length);
+})();
+function lev(a, b) {
+  if (Math.abs(a.length - b.length) > 1) return 2;
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return d[a.length][b.length];
+}
+function namesFromText(text) {
+  const tokens = String(text).toLowerCase().normalize("NFKD").replace(/[^a-z]+/g, " ").trim().split(" ").filter(Boolean);
+  const found = new Set(); let traveler = false;
+  for (let i = 0; i < tokens.length; i++) {
+    if (["traveler", "traveller", "aether", "lumine"].includes(tokens[i])) traveler = true;
+    for (const n of OCR_NAMES) {
+      if (i + n.words.length > tokens.length) continue;
+      let ok = true;
+      for (let k = 0; k < n.words.length; k++) {
+        const t = tokens[i + k], w = n.words[k];
+        if (t === w || (w.length >= 6 && lev(t, w) <= 1)) continue;
+        ok = false; break;
+      }
+      if (ok) found.add(n.id);
+    }
+  }
+  return { ids: [...found], traveler };
+}
 /*LOGIC-END*/
 
 // ---------- UI ----------
@@ -850,10 +887,9 @@ async function importShots(files) {
   const imgs = [...files].filter(f => f.type.startsWith("image/"));
   if (!imgs.length) return;
   const sample = await getSample();
-  if (!sample) { st.classList.add("err"); st.textContent = "Screenshot import needs Claude, which isn't available here. Mark your characters below instead."; return; }
-  let canImages = true;
-  try { const lim = await sample.limits(); canImages = !!(lim && lim.images); } catch (e) {}
-  if (!canImages) { st.classList.add("err"); st.textContent = "Claude can't read images on this page right now. Mark your characters below instead."; return; }
+  let canImages = false;
+  if (sample) { try { const lim = await sample.limits(); canImages = !!(lim && lim.images); } catch (e) {} }
+  if (!canImages) return importShotsOcr(imgs);
   if (isExample) roster = {};
   const names = CHARS.map(c => c[1]).join(", ");
   let found = 0; const unknown = [];
@@ -883,6 +919,59 @@ Reply with JSON only: {"characters":[{"name":"...","constellation":null}]}`;
   st.textContent = `Added ${found} character${found === 1 ? "" : "s"}. Check the list below and fix anything that's wrong.` + (unknown.length ? ` Not recognised: ${unknown.slice(0, 5).join(", ")}.` : "");
 }
 
+// ---------- in-browser text reader (no Claude needed) ----------
+const TESS_URL = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+let tessPromise = null;
+function loadTesseract() {
+  if (window.Tesseract) return Promise.resolve(window.Tesseract);
+  if (!tessPromise) tessPromise = new Promise((res, rej) => {
+    const s = document.createElement("script"); s.src = TESS_URL;
+    s.onload = () => window.Tesseract ? res(window.Tesseract) : rej(new Error("no Tesseract"));
+    s.onerror = () => { tessPromise = null; rej(new Error("load failed")); };
+    document.head.appendChild(s);
+  });
+  return tessPromise;
+}
+// Grayscale, enlarge small images, and turn light-on-dark text dark-on-light: OCR reads that best.
+async function prepImage(file) {
+  const bmp = await createImageBitmap(file);
+  const scale = Math.min(bmp.width < 1400 ? 2 : 1, 4000 / Math.max(bmp.width, bmp.height));
+  const c = document.createElement("canvas");
+  c.width = Math.round(bmp.width * scale); c.height = Math.round(bmp.height * scale);
+  const g = c.getContext("2d"); g.drawImage(bmp, 0, 0, c.width, c.height);
+  const img = g.getImageData(0, 0, c.width, c.height), d = img.data; let sum = 0;
+  for (let i = 0; i < d.length; i += 4) { const y = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]; d[i] = d[i + 1] = d[i + 2] = y; sum += y; }
+  if (sum / (d.length / 4) < 128) for (let i = 0; i < d.length; i += 4) { d[i] = d[i + 1] = d[i + 2] = 255 - d[i]; }
+  g.putImageData(img, 0, 0);
+  return c;
+}
+async function importShotsOcr(imgs) {
+  const st = $("#import-status");
+  st.classList.remove("err");
+  st.textContent = "Loading the text reader (the first time takes a few seconds)…";
+  let worker;
+  try { worker = await (await loadTesseract()).createWorker("eng"); }
+  catch (e) { st.classList.add("err"); st.textContent = "Couldn't load the text reader. Check your connection and try again, or mark characters below."; return; }
+  if (isExample) roster = {};
+  let added = 0, seen = new Set(), traveler = false;
+  try {
+    for (let i = 0; i < imgs.length; i++) {
+      st.textContent = `Reading screenshot ${i + 1} of ${imgs.length}…`;
+      const { data } = await worker.recognize(await prepImage(imgs[i]));
+      const r = namesFromText(data && data.text || "");
+      traveler = traveler || r.traveler;
+      for (const id of r.ids) { seen.add(id); if (roster[id] === undefined) { roster[id] = 0; added++; } }
+    }
+  } catch (e) {
+    st.classList.add("err"); st.textContent = "Couldn't read that screenshot. Try a clearer one, or mark characters below.";
+  } finally { try { await worker.terminate(); } catch (e) {} }
+  saveRoster(); refreshAll();
+  if (st.classList.contains("err")) return;
+  st.textContent = seen.size
+    ? `Found ${seen.size} character${seen.size === 1 ? "" : "s"} (${added} new). Check the list and tick anyone it missed. Constellations aren't read from screenshots, so set them with the C badges.` + (traveler ? " Tick the Traveler elements you've unlocked." : "")
+    : "No character names found. Use a screenshot that shows names, like your HoYoLAB character list, or mark characters below.";
+}
+
 // ---------- wiring ----------
 loadRoster();
 renderFilters();
@@ -905,8 +994,7 @@ document.addEventListener("paste", e => {
 getSample().then(s => {
   if (s) return;
   document.body.classList.add("no-ai");
-  $("#drop").innerHTML = `<p><strong>Mark your characters below.</strong> Screenshot import and Claude's explanations only work in the claude.ai version of this page.</p><div class="row"><button class="btn" id="clear-roster2" type="button">Clear all</button></div>`;
-  $("#clear-roster2").onclick = () => { roster = {}; saveRoster(); refreshAll(); };
+  $("#drop-text").innerHTML = "<strong>Import from screenshots.</strong> Upload or paste screenshots that show your characters' names, like your HoYoLAB character list. They're read in your browser and never uploaded. Check the list afterwards and tick anyone it missed.";
 });
 </script>
 </body>
