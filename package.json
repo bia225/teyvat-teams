@@ -1,0 +1,13 @@
+{
+  "name": "teyvat-teams",
+  "private": true,
+  "description": "Find the best Genshin Impact teams you can build from the characters you own.",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node --test \"tests/*.test.mjs\"",
+    "validate": "node scripts/validate-data.mjs",
+    "update": "node scripts/update-data.mjs",
+    "serve": "python3 -m http.server 8000"
+  }
+}

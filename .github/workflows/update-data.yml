@@ -1,0 +1,79 @@
+name: Update game data
+
+# Daily: adds newly released characters and keeps teams in step with the guides.
+# Teams update automatically when the ANTHROPIC_API_KEY secret is set; otherwise guide changes open an issue.
+on:
+  schedule:
+    - cron: "23 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pages: write
+
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Update data
+        id: update
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL }}
+          REPORT_FILE: ${{ runner.temp }}/report.md
+        run: node scripts/update-data.mjs
+
+      - name: Test updated data
+        run: npm test
+
+      - name: Commit changes
+        id: commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/
+          # When only the "last checked" dates changed, commit once a week (Mondays) instead of every day.
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          elif [ "${{ steps.update.outputs.significant }}" != "true" ] && [ "$(date -u +%u)" != "1" ]; then
+            git reset -q data/
+            git checkout -q -- data/
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -q -m "data: automatic update $(date -u +%Y-%m-%d)" -m "$(cat "$RUNNER_TEMP/report.md")"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Rebuild the site
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds" || echo "Pages will rebuild on its own."
+
+      - name: Open or update an issue when something needs attention
+        if: always() && steps.update.outputs.attention == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="Data update needs attention"
+          body="$(cat "$RUNNER_TEMP/report.md")
+
+          Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          existing=$(gh issue list --state open --search "in:title \"$title\"" --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "$body"
+          else
+            gh issue create --title "$title" --body "$body"
+          fi
