@@ -2,7 +2,109 @@
   "charactersUpdated": "2026-11-12",
   "charactersChecked": "2026-11-12",
   "teamsChecked": "2026-11-12",
-  "guides": {},
-  "guideProbes": {},
-  "pendingGuides": {}
+  "guides": {
+    "neuvillette": {
+      "version": "Luna IV",
+      "hash": "703b9f097024b98a",
+      "checked": "2026-11-12"
+    },
+    "mavuika": {
+      "version": "5.7",
+      "hash": "93edaa3aaff1febc",
+      "checked": "2026-11-12"
+    },
+    "arlecchino": {
+      "version": "Luna VIII",
+      "hash": "b785cdd8a807f924",
+      "checked": "2026-11-12"
+    },
+    "flins": {
+      "version": "Luna V",
+      "hash": "b46ca9b869e41e8c",
+      "checked": "2026-11-12"
+    },
+    "skirk": {
+      "version": "7.1",
+      "hash": "7e0fe20504aacc4d",
+      "checked": "2026-11-12"
+    },
+    "raiden": {
+      "version": "5.7",
+      "hash": "84d1e12ffb748e41",
+      "checked": "2026-11-12"
+    },
+    "keqing": {
+      "version": null,
+      "hash": "beb690d007a3a855",
+      "checked": "2026-11-12"
+    },
+    "columbina": {
+      "version": "7.0",
+      "hash": "54e09c9db62c5f0e",
+      "checked": "2026-11-12"
+    },
+    "varesa": {
+      "version": "7.1",
+      "hash": "5e475eca6935d716",
+      "checked": "2026-11-12"
+    },
+    "zibai": {
+      "version": "Luna VI",
+      "hash": "1b95c1a52f0c40ec",
+      "checked": "2026-11-12"
+    },
+    "varka": {
+      "version": "7.1",
+      "hash": "c9737fc1df104e7b",
+      "checked": "2026-11-12"
+    },
+    "wriothesley": {
+      "version": "7.0",
+      "hash": "5da30c184938ebb2",
+      "checked": "2026-11-12"
+    },
+    "nefer": {
+      "version": "Luna II",
+      "hash": "ffd879822a187705",
+      "checked": "2026-11-12"
+    },
+    "sandrone": {
+      "version": "7.1",
+      "hash": "daf2b4a7f3af189d",
+      "checked": "2026-11-12"
+    },
+    "lohen": {
+      "version": "7.1",
+      "hash": "9233ea65563d90af",
+      "checked": "2026-11-12"
+    }
+  },
+  "guideProbes": {
+    "amber": "2026-11-12",
+    "bennett": "2026-11-12",
+    "chevreuse": "2026-11-12",
+    "dehya": "2026-11-12",
+    "diluc": "2026-11-12",
+    "durin": "2026-11-12",
+    "gaming": "2026-11-12",
+    "hutao": "2026-11-12",
+    "klee": "2026-11-12",
+    "lyney": "2026-11-12",
+    "nicole": "2026-11-12",
+    "thoma": "2026-11-12"
+  },
+  "pendingGuides": {
+    "amber": "https://keqingmains.com/q/amber-quickguide/",
+    "bennett": "https://keqingmains.com/q/bennett-quickguide/",
+    "chevreuse": "https://keqingmains.com/q/chevreuse-quickguide/",
+    "dehya": "https://keqingmains.com/q/dehya-quickguide/",
+    "diluc": "https://keqingmains.com/q/diluc-quickguide/",
+    "durin": "https://keqingmains.com/q/durin-quickguide/",
+    "gaming": "https://keqingmains.com/q/gaming-quickguide/",
+    "hutao": "https://keqingmains.com/q/hu-tao-quickguide/",
+    "klee": "https://keqingmains.com/q/klee-quickguide/",
+    "lyney": "https://keqingmains.com/q/lyney-quickguide/",
+    "nicole": "https://keqingmains.com/q/nicole-quickguide/",
+    "thoma": "https://keqingmains.com/q/thoma-quickguide/"
+  }
 }
