@@ -28,8 +28,8 @@ meta = { ...t.meta, teamsChecked: today() };
 const r = t.report;
 if (r.updated.length) lines.push("Updated guides:\n" + r.updated.map(x => `- ${x}`).join("\n"));
 if (r.added.length) lines.push("New guides:\n" + r.added.map(x => `- ${x}`).join("\n"));
-if (r.changedNoKey.length) attention.push("These guides changed, but teams can't be updated automatically without the ANTHROPIC_API_KEY secret:\n" + r.changedNoKey.map(x => `  - ${x}`).join("\n"));
-if (r.newGuidesNoKey.length) attention.push("New guides were found, but they can't be added automatically without the ANTHROPIC_API_KEY secret:\n" + r.newGuidesNoKey.map(x => `  - ${x}`).join("\n"));
+if (r.changedNoKey.length) attention.push("These guides changed. Their teams will update automatically once the ANTHROPIC_API_KEY secret is set:\n" + r.changedNoKey.map(x => `  - ${x}`).join("\n"));
+if (r.newGuidesNoKey.length) attention.push("New guides were found. They will be added automatically once the ANTHROPIC_API_KEY secret is set:\n" + r.newGuidesNoKey.map(x => `  - ${x}`).join("\n"));
 for (const w of r.warnings) attention.push(`Teams: ${w}`);
 
 const next = { characters, teams: t.teams, meta };

@@ -86,7 +86,7 @@ export async function updateCharacters(characters, { now = new Date() } = {}) {
   const report = { added: [], aliased: [], warnings: [] };
   const titles = await categoryMembers();
   if (titles.length < characters.length * 0.8) throw new Error(`wiki listed only ${titles.length} playable characters; not trusting it`);
-  const unknown = titles.filter(t => !findExisting(t, characters) && !/traveler|manekin/i.test(t));
+  const unknown = titles.filter(t => !findExisting(t, characters) && !/traveler|traveller|aether|lumine|manekin/i.test(t));
   if (!unknown.length) return { characters, report };
   const texts = await pageTexts(unknown);
   const next = characters.slice();
