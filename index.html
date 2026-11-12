@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Genshin Team Finder</title>
+<link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -727,6 +728,9 @@ function refreshAll() { renderGrid(); renderAnchor(); renderResults(); }
 let samplePromise = null;
 function getSample() {
   if (!samplePromise) samplePromise = (async () => {
+    // A standalone page (e.g. GitHub Pages) isn't framed and has no Claude runtime: decide right away.
+    let framed = true; try { framed = window.top !== window; } catch (e) {}
+    if (!framed && !window.claude) return null;
     for (let i = 0; i < 50 && !(window.claude && typeof window.claude.use === "function"); i++) await new Promise(r => setTimeout(r, 200));
     if (!(window.claude && typeof window.claude.use === "function")) return null;
     try { return await window.claude.use("sample"); } catch (e) { return null; }
