@@ -2,7 +2,7 @@
 
 A simple tool to help people build Genshin Impact teams. Mark the characters you own (or import them from screenshots), pick one, and see the best teams you can build for them right now.
 
-**Live site:** https://bia225.github.io/teyvat-teams/
+**Live site:** https://teyvat-teams.vercel.app
 
 ## Features
 
