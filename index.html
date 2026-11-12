@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Genshin Team Finder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: roster on the left, "pick a character -> teams you can build" on the right; stacks on phones. */
+:root {
+  --bg: #eef1f6;
+  --surface: #ffffff;
+  --surface-2: #f6f8fb;
+  --ink: #1b2233;
+  --muted: #5b6477;
+  --line: #d6dbe4;
+  --accent: #9a6f1c;
+  --accent-soft: #f4ead2;
+  --accent-ink: #2a1d05;
+  --warn: #9a3b1c;
+  --display: "Marcellus", "Palatino Linotype", Palatino, Georgia, serif;
+  --body: "Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --pyro: #d9542e; --hydro: #2f7fd0; --anemo: #2aa58a; --electro: #9a5fd6;
+  --dendro: #6aa22c; --cryo: #3fa9c4; --geo: #c79524;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1320; --surface: #161d2c; --surface-2: #1c2436; --ink: #e7ebf3; --muted: #9aa3b6;
+    --line: #2a3348; --accent: #e2b65a; --accent-soft: #3a2f17; --accent-ink: #1a1305; --warn: #f0936f;
+    --pyro: #f0764f; --hydro: #5aa6ee; --anemo: #4ccfb0; --electro: #b98af0;
+    --dendro: #92c94d; --cryo: #7fd3e6; --geo: #e3b84e;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1320; --surface: #161d2c; --surface-2: #1c2436; --ink: #e7ebf3; --muted: #9aa3b6;
+  --line: #2a3348; --accent: #e2b65a; --accent-soft: #3a2f17; --accent-ink: #1a1305; --warn: #f0936f;
+  --pyro: #f0764f; --hydro: #5aa6ee; --anemo: #4ccfb0; --electro: #b98af0;
+  --dendro: #92c94d; --cryo: #7fd3e6; --geo: #e3b84e;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--body); }
+a { color: var(--accent); }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+.wrap { max-width: 1240px; margin: 0 auto; padding: 20px 16px 48px; display: grid; gap: 20px; }
+header.top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 20px; }
+h1 { font: 400 30px/1.15 var(--display); margin: 0; letter-spacing: .02em; text-wrap: balance; }
+.lede { margin: 4px 0 0; color: var(--muted); max-width: 62ch; }
+.credit { color: var(--muted); font-size: 13px; }
+
+.layout { display: grid; gap: 20px; grid-template-columns: 1fr; grid-template-areas: "find" "roster"; }
+@media (min-width: 960px) { .layout { grid-template-columns: 400px 1fr; grid-template-areas: "roster find"; align-items: start; } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 14px; min-width: 0; }
+.panel h2 { font: 400 20px/1.2 var(--display); margin: 0; }
+.panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.roster { grid-area: roster; }
+@media (min-width: 960px) { .roster { position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow: auto; } }
+.find { grid-area: find; }
+.count { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 14px; }
+
+.btn { border: 1px solid var(--line); background: var(--surface-2); border-radius: 8px; padding: 7px 12px; cursor: pointer; font-weight: 600; font-size: 14px; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn[disabled] { opacity: .55; cursor: default; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+.drop { border: 1.5px dashed var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 8px; background: var(--surface-2); }
+.drop.over { border-color: var(--accent); }
+.drop p { margin: 0; font-size: 14px; color: var(--muted); }
+.status { font-size: 14px; margin: 0; }
+.status.err { color: var(--warn); }
+
+.filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.fchip { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 3px 10px; font-size: 13px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+.fchip[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+input[type="search"] { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.char { display: flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); padding: 5px 6px 5px 8px; min-width: 0; }
+.char.on { border-color: var(--el); background: color-mix(in srgb, var(--el) 12%, var(--surface)); }
+.char .tog { flex: 1; min-width: 0; text-align: left; background: none; border: 0; padding: 0; cursor: pointer; display: flex; gap: 6px; align-items: center; font-size: 13px; }
+.char .tog span.n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.char:not(.on) .tog { color: var(--muted); }
+.cons { border: 1px solid var(--line); background: var(--surface); border-radius: 6px; font-size: 11px; font-weight: 700; padding: 1px 5px; cursor: pointer; font-variant-numeric: tabular-nums; }
+.char:not(.on) .cons { display: none; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--el); flex: none; }
+.star5 { box-shadow: 0 0 0 2px color-mix(in srgb, var(--geo) 55%, transparent); }
+
+.pick { display: grid; gap: 10px; }
+.pick label { font-weight: 600; }
+.pick-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.pick-row select { flex: 1 1 220px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); }
+.example { background: var(--accent-soft); border-radius: 8px; padding: 8px 12px; font-size: 14px; }
+
+.summary { display: flex; flex-wrap: wrap; gap: 8px 16px; color: var(--muted); font-size: 14px; }
+.summary strong { color: var(--ink); font-variant-numeric: tabular-nums; }
+
+.teams { display: grid; gap: 12px; }
+.team { border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: grid; gap: 10px; background: var(--surface); }
+.team.ai { border-color: var(--accent); }
+.team-head { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: baseline; }
+.team-head h3 { margin: 0; font: 600 16px/1.3 var(--body); }
+.tag { font-size: 12px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; border-radius: 999px; padding: 2px 8px; background: var(--surface-2); border: 1px solid var(--line); color: var(--muted); }
+.tag.best { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); }
+.tag.budget { color: var(--muted); }
+.members { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 560px) { .members { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.mem { border-radius: 10px; border: 1px solid var(--line); border-top: 4px solid var(--el); padding: 8px; background: var(--surface-2); display: grid; gap: 2px; align-content: start; min-width: 0; }
+.mem.anchor { background: color-mix(in srgb, var(--el) 10%, var(--surface)); }
+.mem .nm { font-weight: 700; overflow-wrap: anywhere; }
+.mem .meta { font-size: 12px; color: var(--muted); }
+.mem .why { font-size: 13px; margin-top: 4px; }
+.mem .alt { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.note { margin: 0; font-size: 14px; color: var(--muted); }
+.src { font-size: 13px; color: var(--muted); }
+.need { font-size: 14px; }
+.need b { color: var(--warn); }
+.empty { border: 1px dashed var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 8px; }
+.empty p { margin: 0; }
+.ai-box { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 8px; background: var(--surface-2); }
+.ai-box p { margin: 0; font-size: 14px; }
+.section-label { font-size: 13px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: 6px 0 0; }
+.hidden { display: none !important; }
+.no-ai #ai-box, .no-ai #fallback-btn { display: none !important; }
+footer { color: var(--muted); font-size: 13px; max-width: 80ch; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Genshin Team Finder</h1>
+      <p class="lede">Mark the characters you own, pick one, and see the best teams you can build for them right now. Teams come from KeqingMains (KQM) quick guides.</p>
+    </div>
+    <span class="credit">Game data up to version 7.2</span>
+  </header>
+
+  <div class="layout">
+    <section class="panel roster" aria-labelledby="roster-h">
+      <div class="panel-head">
+        <h2 id="roster-h">Your characters</h2>
+        <span class="count" id="owned-count"></span>
+      </div>
+
+      <div class="drop" id="drop">
+        <p><strong>Import from screenshots.</strong> Upload or paste screenshots of your character list. Screens that show character names work best (for example your HoYoLAB character list). You can fix anything Claude misreads below.</p>
+        <div class="row">
+          <label class="btn primary" for="shots">Choose screenshots</label>
+          <input id="shots" type="file" accept="image/*" multiple class="hidden">
+          <button class="btn" id="clear-roster" type="button">Clear all</button>
+        </div>
+        <p class="status" id="import-status" role="status" aria-live="polite"></p>
+      </div>
+
+      <input type="search" id="search" placeholder="Search characters" aria-label="Search characters">
+      <div class="filters" id="el-filters" role="group" aria-label="Filter by element"></div>
+      <div class="filters" role="group" aria-label="Show">
+        <button class="fchip" type="button" id="f-owned" aria-pressed="false">Owned only</button>
+      </div>
+      <div class="grid" id="grid"></div>
+      <p class="note">Click a name to mark it owned. Click the C badge to set its constellation (some KQM teams need a specific one).</p>
+    </section>
+
+    <section class="panel find" aria-labelledby="find-h">
+      <div class="pick">
+        <label for="anchor" id="find-h">Find teams for</label>
+        <div class="pick-row">
+          <select id="anchor"></select>
+        </div>
+        <div class="example hidden" id="example-note">This is an example roster so you can see how it works. Import your screenshots or mark your own characters on the left.</div>
+      </div>
+      <div class="summary" id="summary"></div>
+      <div class="ai-box" id="ai-box">
+        <p id="ai-text">Want a short explanation of each pick? Claude can rank these teams for your roster and say what each teammate does.</p>
+        <div class="row">
+          <button class="btn primary" type="button" id="ai-btn">Rank and explain with Claude</button>
+        </div>
+        <p class="status" id="ai-status" role="status" aria-live="polite"></p>
+      </div>
+      <div id="ai-results" class="teams"></div>
+      <p class="section-label" id="kqm-label">Teams you can build</p>
+      <div id="results" class="teams"></div>
+      <div id="almost" class="teams"></div>
+    </section>
+  </div>
+
+  <footer>
+    Team data is taken from <a href="https://keqingmains.com/">KeqingMains</a> quick guides, used with permission. Each team links to the guide it came from. Fan-made and not affiliated with HoYoverse. Genshin Impact is a trademark of HoYoverse.
+  </footer>
+</div>
+
+<script>
+/*LOGIC-START*/
+// [id, name, element, weapon, rarity]
+const CHARS = [
+  ["amber","Amber","pyro","bow",4],["arlecchino","Arlecchino","pyro","polearm",5],["bennett","Bennett","pyro","sword",4],
+  ["chevreuse","Chevreuse","pyro","polearm",4],["dehya","Dehya","pyro","claymore",5],["diluc","Diluc","pyro","claymore",5],
+  ["durin","Durin","pyro","sword",5],["gaming","Gaming","pyro","claymore",4],["hutao","Hu Tao","pyro","polearm",5],
+  ["klee","Klee","pyro","catalyst",5],["lyney","Lyney","pyro","bow",5],["mavuika","Mavuika","pyro","claymore",5],
+  ["nicole","Nicole","pyro","catalyst",5],["thoma","Thoma","pyro","polearm",4],["xiangling","Xiangling","pyro","polearm",4],
+  ["xinyan","Xinyan","pyro","claymore",4],["yanfei","Yanfei","pyro","catalyst",4],["yoimiya","Yoimiya","pyro","bow",5],
+  ["aino","Aino","hydro","claymore",4],["ayato","Ayato","hydro","sword",5],["barbara","Barbara","hydro","catalyst",4],
+  ["candace","Candace","hydro","polearm",4],["columbina","Columbina","hydro","catalyst",5],["dahlia","Dahlia","hydro","sword",4],
+  ["furina","Furina","hydro","sword",5],["kokomi","Kokomi","hydro","catalyst",5],["mona","Mona","hydro","catalyst",5],
+  ["mualani","Mualani","hydro","catalyst",5],["neuvillette","Neuvillette","hydro","catalyst",5],["nilou","Nilou","hydro","sword",5],
+  ["sigewinne","Sigewinne","hydro","bow",5],["tartaglia","Tartaglia","hydro","bow",5],["vodyanitsa","Vodyanitsa","hydro","catalyst",5],
+  ["xingqiu","Xingqiu","hydro","sword",4],["yelan","Yelan","hydro","bow",5],
+  ["alyosha","Alyosha","electro","polearm",4],["beidou","Beidou","electro","claymore",4],["clorinde","Clorinde","electro","sword",5],
+  ["cyno","Cyno","electro","polearm",5],["dori","Dori","electro","claymore",4],["fischl","Fischl","electro","bow",4],
+  ["flins","Flins","electro","polearm",5],["iansan","Iansan","electro","polearm",4],["ineffa","Ineffa","electro","polearm",5],
+  ["keqing","Keqing","electro","sword",5],["kuki","Kuki Shinobu","electro","sword",4],["lisa","Lisa","electro","catalyst",4],
+  ["mitya","Mitya","electro","catalyst",5],["ororon","Ororon","electro","bow",4],["raiden","Raiden","electro","polearm",5],
+  ["razor","Razor","electro","claymore",4],["sara","Sara","electro","bow",4],["sethos","Sethos","electro","bow",4],
+  ["valeriy","Valeriy","electro","sword",4],["varesa","Varesa","electro","catalyst",5],["yae","Yae Miko","electro","catalyst",5],
+  ["aloy","Aloy","cryo","bow",5],["ayaka","Ayaka","cryo","sword",5],["charlotte","Charlotte","cryo","catalyst",4],
+  ["chongyun","Chongyun","cryo","claymore",4],["citlali","Citlali","cryo","catalyst",5],["diona","Diona","cryo","bow",4],
+  ["escoffier","Escoffier","cryo","polearm",5],["eula","Eula","cryo","claymore",5],["freminet","Freminet","cryo","claymore",4],
+  ["ganyu","Ganyu","cryo","bow",5],["kaeya","Kaeya","cryo","sword",4],["layla","Layla","cryo","sword",4],
+  ["lohen","Lohen","cryo","polearm",5],["mika","Mika","cryo","polearm",4],["odette","Odette","cryo","sword",5],
+  ["qiqi","Qiqi","cryo","sword",5],["rosaria","Rosaria","cryo","polearm",4],["sandrone","Sandrone","cryo","claymore",5],
+  ["shenhe","Shenhe","cryo","polearm",5],["skirk","Skirk","cryo","sword",5],["wriothesley","Wriothesley","cryo","catalyst",5],
+  ["chasca","Chasca","anemo","bow",5],["faruzan","Faruzan","anemo","bow",4],["heizou","Heizou","anemo","catalyst",4],
+  ["ifa","Ifa","anemo","catalyst",4],["jahoda","Jahoda","anemo","bow",4],["jean","Jean","anemo","sword",5],
+  ["kazuha","Kazuha","anemo","sword",5],["lanyan","Lan Yan","anemo","catalyst",4],["lynette","Lynette","anemo","sword",4],
+  ["mizuki","Mizuki","anemo","catalyst",5],["prune","Prune","anemo","catalyst",4],["sayu","Sayu","anemo","claymore",4],
+  ["sucrose","Sucrose","anemo","catalyst",4],["varka","Varka","anemo","claymore",5],["venti","Venti","anemo","bow",5],
+  ["vesna","Vesna","anemo","sword",5],["wanderer","Wanderer","anemo","catalyst",5],["xianyun","Xianyun","anemo","catalyst",5],
+  ["xiao","Xiao","anemo","polearm",5],
+  ["albedo","Albedo","geo","sword",5],["chiori","Chiori","geo","sword",5],["gorou","Gorou","geo","bow",4],
+  ["illuga","Illuga","geo","polearm",4],["itto","Itto","geo","claymore",5],["kachina","Kachina","geo","polearm",4],
+  ["linnea","Linnea","geo","bow",5],["navia","Navia","geo","claymore",5],["ningguang","Ningguang","geo","catalyst",4],
+  ["noelle","Noelle","geo","claymore",4],["xilonen","Xilonen","geo","sword",5],["yunjin","Yun Jin","geo","polearm",4],
+  ["zhongli","Zhongli","geo","polearm",5],["zibai","Zibai","geo","sword",5],
+  ["alhaitham","Alhaitham","dendro","sword",5],["baizhu","Baizhu","dendro","catalyst",5],["collei","Collei","dendro","bow",4],
+  ["emilie","Emilie","dendro","polearm",5],["kaveh","Kaveh","dendro","claymore",4],["kinich","Kinich","dendro","claymore",5],
+  ["kirara","Kirara","dendro","sword",4],["lauma","Lauma","dendro","catalyst",5],["nahida","Nahida","dendro","catalyst",5],
+  ["nefer","Nefer","dendro","catalyst",5],["tighnari","Tighnari","dendro","bow",5],["yaoyao","Yaoyao","dendro","polearm",4],
+  ["traveler-anemo","Traveler (Anemo)","anemo","sword",5],["traveler-geo","Traveler (Geo)","geo","sword",5],
+  ["traveler-electro","Traveler (Electro)","electro","sword",5],["traveler-dendro","Traveler (Dendro)","dendro","sword",5],
+  ["traveler-hydro","Traveler (Hydro)","hydro","sword",5],["traveler-pyro","Traveler (Pyro)","pyro","sword",5],
+  ["traveler-cryo","Traveler (Cryo)","cryo","sword",5]
+];
+const BY_ID = Object.fromEntries(CHARS.map(c => [c[0], { id: c[0], name: c[1], el: c[2], weapon: c[3], rarity: c[4] }]));
+const ELEMENTS = ["pyro","hydro","anemo","electro","dendro","cryo","geo"];
+
+const SOURCES = {
+  neuv: { guide: "Neuvillette", url: "https://keqingmains.com/q/neuvillette-quickguide/", ver: "" },
+  mav: { guide: "Mavuika", url: "https://keqingmains.com/q/mavuika-quickguide/", ver: "5.7" },
+  arle: { guide: "Arlecchino", url: "https://keqingmains.com/q/arlecchino-quickguide", ver: "6.7" },
+  flins: { guide: "Flins", url: "https://keqingmains.com/q/flins-quickguide/", ver: "6.5" },
+  skirk: { guide: "Skirk", url: "https://keqingmains.com/q/skirk-quickguide/", ver: "7.1" },
+  raiden: { guide: "Raiden Shogun", url: "https://keqingmains.com/q/raiden-quickguide/", ver: "4.0" },
+  keqing: { guide: "Keqing", url: "https://keqingmains.com/q/keqing-quickguide/", ver: "6.0" },
+  colu: { guide: "Columbina", url: "https://keqingmains.com/q/columbina-quickguide/", ver: "7.0" },
+  varesa: { guide: "Varesa", url: "https://keqingmains.com/q/varesa-quickguide/", ver: "7.1" },
+  zibai: { guide: "Zibai", url: "https://keqingmains.com/q/zibai-quickguide/", ver: "6.5" },
+  varka: { guide: "Varka", url: "https://keqingmains.com/q/varka-quickguide/", ver: "7.1" },
+  wrio: { guide: "Wriothesley", url: "https://keqingmains.com/q/wriothesley-quickguide", ver: "7.0" },
+  nefer: { guide: "Nefer", url: "https://keqingmains.com/q/nefer-quickguide/", ver: "6.1" },
+  sandrone: { guide: "Sandrone", url: "https://keqingmains.com/q/sandrone-quickguide/", ver: "7.1" },
+  lohen: { guide: "Lohen", url: "https://keqingmains.com/q/lohen-quickguide/", ver: "6.6" }
+};
+
+// [source, archetype, "slot|slot|slot|slot" (a/b = ranked alternatives, x@6 = needs C6), note, limitedRoster?]
+const RAW_TEAMS = [
+  ["neuv","Hypercarry","neuvillette|kazuha|furina|xilonen/zhongli/lisa","Kazuha and Furina buff Neuvillette; the last slot adds RES shred or defense."],
+  ["neuv","Hypercarry","neuvillette|xilonen|furina|mavuika/durin","Xilonen and Furina are the main buffs; a Pyro flex adds damage and buffs of its own."],
+  ["neuv","Hypercarry","neuvillette|kazuha/lynette/lanyan|furina|ororon","An Anemo support plus Furina and Ororon buffing Neuvillette."],
+  ["neuv","Hypercarry","neuvillette|lynette|furina|kachina/xilonen","Lynette taunts enemies, Furina buffs, and Kachina or Xilonen adds a Scroll buff."],
+  ["neuv","Hypercarry","neuvillette|kazuha|fischl|kachina/zhongli","Kazuha buffs, Fischl adds off-field Electro damage, Kachina or Zhongli supports."],
+  ["neuv","Hypercarry","neuvillette|jean|furina|fischl/zhongli","Jean's healing stacks Furina's Fanfare."],
+  ["neuv","Vaporize","neuvillette|xiangling|xilonen|kazuha/sucrose/lynette","Xiangling applies Pyro for Vaporize; Xilonen shreds Hydro RES."],
+  ["neuv","Vaporize","neuvillette|xiangling|lauma/nahida|furina","A Dendro unit adds Burning while Furina adds damage bonus."],
+  ["neuv","Vaporize","neuvillette|xiangling|kazuha/emilie|zhongli","Xiangling drives Vaporize; Zhongli provides the shield."],
+  ["neuv","Vaporize","neuvillette|xiangling|lynette|kachina/zhongli","Xiangling drives Vaporize and Lynette absorbs Pyro."],
+  ["neuv","Lunar-Charged","neuvillette|ineffa|columbina|kazuha/sucrose/lynette","Ineffa drives Lunar-Charged and Columbina buffs it."],
+  ["neuv","Lunar-Charged","neuvillette|ineffa|furina|kazuha/sucrose/lynette/jahoda","Ineffa drives Lunar-Charged with Furina's buffs and an Anemo support."],
+  ["neuv","Lunar-Charged","neuvillette|ineffa|fischl/ororon|kazuha","Ineffa drives Lunar-Charged with a second Electro unit."],
+  ["neuv","Lunar-Charged","neuvillette|ineffa|aino/mona@1/yelan|sucrose","Ineffa drives Lunar-Charged with a second Hydro unit and Sucrose's EM buff."],
+  ["neuv","Electro-Charged","neuvillette|ororon|fischl/beidou/yae|kazuha","Ororon buffs while another Electro unit applies off-field."],
+  ["neuv","Electro-Charged","neuvillette|fischl|beidou|kazuha","Fischl and Beidou apply Electro and Kazuha buffs."],
+  ["neuv","Electro-Charged","neuvillette|fischl|yae|zhongli","Fischl and Yae apply off-field Electro; Zhongli shields."],
+  ["neuv","Hyperbloom","neuvillette|ineffa|lauma|columbina","Lauma sets up Hyperbloom, Ineffa triggers it, Columbina buffs."],
+  ["neuv","Hyperbloom","neuvillette|ineffa/raiden|lauma|furina","Ineffa or Raiden triggers Hyperbloom from Lauma's setup."],
+  ["neuv","Hyperbloom","neuvillette|ineffa/raiden|nahida|furina","Nahida supplies Dendro and Ineffa or Raiden triggers."],
+  ["neuv","Hyperbloom","neuvillette|raiden|nahida|fischl","Raiden and Fischl trigger Hyperbloom off-field."],
+  ["neuv","Hyperbloom","neuvillette|raiden|nahida|kirara","Raiden triggers; Kirara's shield keeps Neuvillette safe."],
+  ["neuv","Hyperbloom","neuvillette|kuki|traveler-dendro|collei","A cheaper Hyperbloom option with frequent swaps.",true],
+  ["neuv","Bloom","neuvillette|nilou|lauma|nahida/kirara","Nilou sets up Bloom and Lauma buffs it."],
+  ["neuv","Bloom","neuvillette|nilou|nahida|baizhu","Nilou Bloom with Baizhu's healing and Bloom buff."],
+  ["neuv","Bloom","neuvillette|nilou|traveler-dendro|yaoyao","An accessible Nilou Bloom team.",true],
+  ["neuv","Freeze","neuvillette|escoffier|furina|citlali/shenhe","Escoffier and Furina keep Freeze up; Citlali or Shenhe buffs."],
+  ["neuv","Freeze","neuvillette|escoffier|furina|skirk","Skirk swaps in for her Burst between Neuvillette's field time."],
+  ["neuv","Freeze","neuvillette|citlali|furina|kazuha/lynette","Citlali and Furina support, with an Anemo unit for buffs."],
+  ["neuv","Freeze","neuvillette|charlotte/mika/rosaria|furina|kazuha","A 4-star Cryo applier with Furina and Kazuha."],
+
+  ["mav","Forward Melt","mavuika|citlali|xilonen/iansan/sucrose/kazuha|bennett","Citlali applies Cryo for Melt; Bennett and the third slot buff."],
+  ["mav","Forward Melt","mavuika|kachina/iansan|rosaria@2|bennett","An all 4-star Melt team; Rosaria needs C2."],
+  ["mav","Vaporize","mavuika|xilonen|furina/yelan|bennett","Furina or Yelan applies Hydro off-field for Vaporize."],
+  ["mav","Overloaded","mavuika|ororon|chevreuse|bennett/iansan","Ororon applies Electro; Chevreuse shreds RES and heals."],
+  ["mav","Forward Vaporize","mavuika|mualani|xilonen|kazuha/sucrose","Mavuika applies Pyro off-field for Mualani's Vaporize."],
+  ["mav","Reverse Melt","mavuika|wriothesley|bennett|xilonen/emilie","Mavuika's off-field Pyro enables Wriothesley's Melt."],
+  ["mav","Reverse Melt","mavuika|ganyu|bennett|xilonen/zhongli","Mavuika's off-field Pyro enables Ganyu's Melt."],
+  ["mav","Vaporize","mavuika|chasca|furina|bennett/xilonen","Chasca's bullets get Vaporized with Mavuika's help."],
+  ["mav","Overloaded","mavuika|clorinde|chevreuse|sara/ororon/fischl","Mavuika buffs Clorinde in a Chevreuse Overload team."],
+  ["mav","Overloaded","mavuika|varesa|chevreuse|iansan/ororon","Mavuika buffs Varesa in a Chevreuse Overload team."],
+  ["mav","Burning","mavuika|kinich|iansan|bennett/emilie","Mavuika's off-field Pyro and buffs pair with Kinich."],
+
+  ["arle","Reverse Vaporize","arlecchino|yelan|bennett|xilonen/kazuha/sucrose","Yelan applies Hydro, Bennett buffs, and the last slot shreds RES."],
+  ["arle","Reverse Vaporize","arlecchino|yelan|bennett|lanyan","Lan Yan shields Arlecchino and holds the support gear."],
+  ["arle","Reverse Vaporize","arlecchino|mona|bennett/nicole|sucrose","Mona's buffs last through Arlecchino's field time. Works best with a high-constellation Mona."],
+  ["arle","Reverse Vaporize","arlecchino|mona|bennett/nicole|fischl@6","C6 Fischl keeps her ATK and EM buffs up."],
+  ["arle","Reverse Vaporize","arlecchino|columbina|ineffa|xilonen","Columbina and Ineffa form a Lunar-Charged core alongside Vaporize."],
+  ["arle","Reverse Vaporize","arlecchino|xingqiu|bennett|sucrose","A single-target option for players without Yelan."],
+  ["arle","Reverse Vaporize","arlecchino|candace@6|bennett|xilonen","C6 Candace applies mobile off-field Hydro."],
+  ["arle","Reverse Vaporize","arlecchino|furina|yelan|xilonen","Double Hydro is more forgiving with auras and buffs."],
+  ["arle","Forward Melt","arlecchino|citlali|bennett|xilonen/sucrose/kazuha","The standard Melt setup with Citlali's Cryo."],
+  ["arle","Forward Melt","arlecchino|citlali|nicole|sucrose","Nicole buffs like Bennett with a stronger shield."],
+  ["arle","Forward Melt","arlecchino|citlali|bennett|escoffier/layla","Double Cryo makes Melts more reliable."],
+  ["arle","Forward Melt","arlecchino|kaeya@6|bennett|xilonen","C6 Kaeya applies Cryo fast enough to Melt."],
+  ["arle","Forward Melt","arlecchino|escoffier|bennett|venti","Venti spreads Escoffier's Cryo for Melts."],
+  ["arle","Overloaded","arlecchino|chevreuse|fischl|nicole","Fischl and Nicole buff ATK; Nicole's shield adds comfort."],
+  ["arle","Overloaded","arlecchino|chevreuse|fischl/ineffa|bennett","Bennett and Chevreuse buff both carries."],
+  ["arle","Overloaded","arlecchino|chevreuse|fischl|durin","Durin adds RES shred and AoE damage."],
+  ["arle","Overloaded","arlecchino|chevreuse|yae|thoma","Thoma's shields add defensive utility."],
+  ["arle","Mono Pyro","arlecchino|bennett|xilonen|kazuha","Xilonen and Kazuha shred Pyro RES and boost Pyro damage."],
+  ["arle","Mono Pyro","arlecchino|bennett|emilie|lanyan","Emilie deals off-field damage; Lan Yan shields."],
+  ["arle","Mono Pyro","arlecchino|bennett|chiori|zhongli/kachina","Double Geo boosts damage and shields."],
+  ["arle","Mono Pyro","arlecchino|durin|albedo|nicole/xilonen","Lets Arlecchino move freely without Bennett's circle."],
+  ["arle","Mono Pyro","arlecchino|durin|nicole|prune","A Bennett-less team where Nicole and Prune buff."],
+  ["arle","Mono Pyro","arlecchino|bennett|lanyan|kachina","All 4-star supports, good buffs and survivability.",true],
+
+  ["flins","Lunar-Charged","flins|ineffa|columbina/aino|sucrose","Ineffa and Columbina buff Flins and each other; Sucrose adds EM."],
+  ["flins","Lunar-Charged","flins|ineffa|yelan/mona|sucrose","A Columbina-free version with Yelan or Mona on Hydro."],
+  ["flins","Lunar-Charged","flins|ineffa|furina|xilonen/jahoda","Furina applies Hydro; Xilonen or Jahoda heals."],
+  ["flins","Lunar-Charged","flins|fischl|columbina|sucrose","Works without Ineffa; Sucrose enables Fischl's Hexerei buffs."],
+  ["flins","Lunar-Charged","flins|fischl|columbina|durin","Durin replaces Sucrose for RES shred and damage."],
+  ["flins","Lunar-Charged","flins|fischl|mona|jahoda","Mona handles Hydro while Jahoda buffs and heals."],
+  ["flins","Lunar-Charged","flins|iansan/sara|aino|sucrose","An Ineffa-less team with an Electro buffer. KQM's Sara rotation assumes C2."],
+  ["flins","Lunar-Charged","flins|kuki|aino|lynette/heizou","Kuki's particles keep Flins's Energy needs low."],
+  ["flins","Lunar-Charged","flins|fischl/ororon|aino|lanyan","Off-field Electro plus Lan Yan's buffs and shields."],
+
+  ["skirk","Freeze","skirk|furina|escoffier|vodyanitsa","Furina, Escoffier and Vodyanitsa combine for Skirk's biggest damage."],
+  ["skirk","Freeze","skirk|furina|escoffier|citlali/mualani","Citlali gives a full Scroll buff and a shield."],
+  ["skirk","Freeze","skirk|furina|escoffier|mona/shenhe/yelan","A version without Vodyanitsa."],
+  ["skirk","Freeze","skirk|vodyanitsa|escoffier|mona","KQM's strongest team without Furina."],
+  ["skirk","Freeze","skirk|furina|charlotte|vodyanitsa","A version without Escoffier."],
+  ["skirk","Freeze","skirk|xingqiu|rosaria|vodyanitsa","No Furina or Escoffier; Rosaria adds CRIT Rate."],
+  ["skirk","Freeze","skirk|vodyanitsa|rosaria|dahlia","Dahlia adds Attack Speed, Hydro Resonance and a shield."],
+  ["skirk","Freeze","skirk|candace@6|escoffier|dahlia","Only works with C6 Candace for off-field Hydro."],
+  ["skirk","Freeze","skirk|xingqiu|escoffier|charlotte","Xingqiu applies Hydro and Charlotte supports."],
+  ["skirk","Freeze","skirk|furina|chongyun|charlotte","Chongyun batteries Charlotte."],
+  ["skirk","Freeze","skirk|yelan|rosaria|xingqiu","Double Hydro with Yelan; no healer."],
+  ["skirk","Freeze","skirk|yelan|rosaria|charlotte","Trades Hydro Resonance for a healer."],
+  ["skirk","Freeze","skirk|xingqiu|chongyun|charlotte","A budget team for newer players.",true],
+  ["skirk","Freeze","skirk|aino|chongyun|layla","Aino applies Hydro and Layla shields.",true],
+  ["skirk","Freeze","skirk|xingqiu|rosaria|layla","Xingqiu applies Hydro, Rosaria adds CRIT Rate, Layla shields.",true],
+
+  ["raiden","National","raiden|xiangling|xingqiu|bennett","Xiangling Vaporizes off Xingqiu's Hydro; Bennett buffs and heals."],
+  ["raiden","Mono Electro","raiden|yae|sara|xilonen/sayu","Yae and Raiden feed each other Energy while Sara buffs."],
+  ["raiden","Hypercarry","raiden|furina|yelan|xilonen/jean","Furina and Yelan both boost Raiden's damage."],
+  ["raiden","Overloaded","raiden|chevreuse|sara|xiangling/traveler-pyro","Chevreuse shreds Electro RES with off-field Pyro."],
+  ["raiden","Hypercarry","raiden|kazuha/chevreuse|sara|bennett","The classic Raiden hypercarry."],
+  ["raiden","Hypercarry","raiden|furina|sara|xilonen","Focused on Raiden's personal damage."],
+  ["raiden","Aggravate","raiden|yaoyao|fischl|sucrose","Fischl contributes heavily through Aggravate."],
+  ["raiden","Aggravate","raiden|nahida|kuki|kazuha","A multi-target Aggravate team."],
+  ["raiden","Quickbloom","raiden|nahida|furina|baizhu","Balances Aggravate and Hyperbloom; Baizhu heals."],
+  ["raiden","Superconduct","raiden|eula|mika|furina","Raiden batteries Eula and enables Superconduct."],
+  ["raiden","Crystallize","raiden|navia|sara|xilonen","Raiden applies Electro for Navia's Crystallize shards."],
+  ["raiden","Hyperbloom","raiden|baizhu|xingqiu|yelan","Raiden triggers Hyperbloom on-field."],
+  ["raiden","Quickbloom","raiden|nahida|kokomi|beidou","Kokomi's slower Hydro lets Aggravate and Spread trigger."],
+  ["raiden","Hyperbloom","raiden|alhaitham|xingqiu|yaoyao/kirara","Raiden triggers Quicken and Hyperbloom for Alhaitham."],
+  ["raiden","Overloaded","raiden|lyney|bennett|chevreuse","Raiden provides periodic Electro for Overloaded."],
+
+  ["keqing","Lunar-Charged","keqing|ineffa|furina|jean","Jean's healing builds Furina's Fanfare."],
+  ["keqing","Lunar-Charged","keqing|ineffa|furina|xilonen","Xilonen heals and buffs in one slot."],
+  ["keqing","Lunar-Charged","keqing|ineffa|aino|sucrose","A cheap team with a simple rotation."],
+  ["keqing","Lunar-Charged","keqing|ineffa|yelan|kazuha","An option without Furina or Aino."],
+  ["keqing","Overloaded","keqing|chevreuse|xiangling|fischl","Xiangling applies Pyro for Chevreuse's passive."],
+  ["keqing","Overloaded","keqing|chevreuse|mavuika|ororon","Ororon lets Mavuika Burst every rotation."],
+  ["keqing","Overloaded","keqing|chevreuse|xiangling|sara@6","A Hyper Keqing team; needs C6 Sara."],
+
+  ["colu","Lunar-Charged","columbina|ineffa|flins|sucrose","The standard Lunar-Charged core."],
+  ["colu","Lunar-Charged","columbina|fischl|flins|xilonen/jean/sayu/lanyan","An Ineffa-less version; Fischl and Flins deal damage."],
+  ["colu","Lunar-Charged","columbina|ineffa|raiden|sucrose@1","Raiden's Energy refund lowers everyone's Energy needs."],
+  ["colu","Lunar-Charged","columbina|ineffa|neuvillette|kazuha","Most damage comes from Columbina and Ineffa's Lunar-Charged."],
+  ["colu","Overvape","columbina|ineffa|yelan|hutao","Columbina and Ineffa drive Lunar-Charged while Hu Tao deals Pyro damage."],
+  ["colu","Lunar-Charged","columbina|fischl|mona|arlecchino","Columbina applies Hydro so Mona can focus on buffing."],
+  ["colu","Lunar-Charged","columbina|fischl|durin|jahoda","Jahoda enables Ascendant Gleam."],
+  ["colu","Lunar-Charged","columbina|fischl|aino|lanyan","All 4-star teammates; lower damage.",true],
+  ["colu","Lunar-Bloom","columbina|lauma|nefer|sucrose/nahida/zhongli/kuki","Columbina's Burst generates the stacks Lauma needs for Nefer."],
+  ["colu","Lunar-Bloom","columbina|collei|nefer|aino","A more accessible Lunar-Bloom team without Lauma."],
+  ["colu","Lunar-Bloom","columbina|lauma|ineffa|ayato","Ineffa triggers Hyperbloom while keeping Lunar-Charged up."],
+
+  ["varesa","Hypercarry","varesa|iansan|furina|xianyun","Furina and Iansan buff Varesa; Xianyun swirls for VV."],
+  ["varesa","Lunar-Charged","varesa|columbina|ineffa|xianyun/xilonen","Columbina and Ineffa deal off-field damage."],
+  ["varesa","Hypercarry","varesa|iansan/ororon|xilonen|kazuha","Xilonen and Kazuha shred and buff."],
+  ["varesa","Hypercarry","varesa|iansan|durin|xilonen","Iansan, Durin and Xilonen buff Varesa's personal damage."],
+  ["varesa","Stellar-Conduct","varesa|iansan/xilonen|odette|yae","Odette and Yae deal Stellar-Conduct damage for content that needs it."],
+
+  ["zibai","Double Geo","zibai|xilonen|columbina|furina/aino","Xilonen shreds RES; Furina or Aino feed Columbina particles."],
+  ["zibai","Lunar","zibai|xilonen/linnea|columbina|ineffa","Triggers both Lunar-Crystallize and Lunar-Charged."],
+
+  ["varka","Double Pyro","varka|prune@6/venti/prune|nicole|durin","Varka's strongest archetype. Prefer Venti unless Prune is C6."],
+  ["varka","Double Pyro","varka|venti/faruzan|bennett|durin","For players without Nicole or with a low-constellation Prune."],
+  ["varka","Double Pyro","varka|prune/venti|nicole|bennett","For players without Durin."],
+  ["varka","Hydro","varka|prune|vodyanitsa|furina/mona","Varka's best Hydro team."],
+  ["varka","Hydro","varka|prune|mona|furina/yelan","A Hydro team without Vodyanitsa."],
+  ["varka","Stellar Swirl","varka|prune|odette|traveler-cryo/escoffier","Cryo Traveler adds damage; Escoffier adds RES shred."],
+  ["varka","Cryo","varka|prune|escoffier|shenhe","A Cryo team with Escoffier and Shenhe."],
+  ["varka","Electro","varka|venti|iansan|fischl","An Electro version with Iansan and Fischl."],
+  ["varka","Double Pyro","varka|sucrose|bennett|dehya","An accessible option without Prune.",true],
+  ["varka","Electro","varka|jahoda/sayu|fischl|lisa","An accessible Electro team.",true],
+  ["varka","Cryo","varka|prune|traveler-cryo|diona","An accessible Double Cryo team.",true],
+
+  ["wrio","Stellar-Conduct","wriothesley|odette|yae|escoffier/sucrose","Yae and Odette open the rotation."],
+  ["wrio","Stellar-Conduct","wriothesley|odette|yae|nicole","Nicole adds ATK buffs and a shield."],
+  ["wrio","Stellar-Conduct","wriothesley|odette|yae|lanyan/zhongli","A shield with extra buffs."],
+  ["wrio","Stellar-Conduct","wriothesley|odette|beidou@6|xilonen","C6 Beidou shreds Electro and Cryo RES."],
+  ["wrio","Stellar-Conduct","wriothesley|traveler-cryo|alyosha/fischl|layla","A lower-damage option for newer players.",true],
+  ["wrio","Reverse Melt","wriothesley|durin|nicole|xilonen","Durin enables Melt off-field; Nicole buffs and shields."],
+  ["wrio","Reverse Melt","wriothesley|durin|nicole|emilie","A Burnmelt version with Emilie."],
+  ["wrio","Reverse Melt","wriothesley|mavuika|bennett|xilonen","Mavuika supplies Pyro for Melt."],
+  ["wrio","Reverse Melt","wriothesley|xiangling|bennett|furina","Alternating auras allow Melt and Vaporize."],
+  ["wrio","Reverse Melt","wriothesley|xiangling|bennett|lanyan","A standard Melt team with Lan Yan's shield.",true],
+  ["wrio","Freeze","wriothesley|escoffier|furina|shenhe/yelan","Escoffier shreds RES and Furina adds damage bonus."],
+  ["wrio","Mono Cryo","wriothesley|escoffier|shenhe|layla","Escoffier heals and Layla shields."],
+  ["wrio","Mono Cryo","wriothesley|shenhe|xilonen|yunjin","Yun Jin buffs Wriothesley's Normal Attacks."],
+  ["wrio","Freeze","wriothesley|xingqiu|mika|lynette","A 4-star-only Freeze team.",true],
+  ["wrio","Forward Melt","wriothesley|durin|nicole|citlali","Citlali lets Wriothesley enable Melt for Durin."],
+
+  ["nefer","Lunar-Bloom","nefer|aino|lauma|kuki/zhongli","Aino and Lauma enable Lunar-Bloom."],
+  ["nefer","Lunar-Bloom","nefer|aino|lauma|nahida/sucrose","High damage, but fragile without much healing."],
+  ["nefer","Lunar-Bloom","nefer|kokomi|lauma|nahida","Kokomi applies Hydro consistently."],
+  ["nefer","Lunar-Bloom","nefer|furina|lauma|ineffa/kuki","Furina applies off-field Hydro; Ineffa adds EM."],
+  ["nefer","Lunar-Bloom","nefer|aino|nahida|kuki","A Lauma-less team that can still clear most content."],
+  ["nefer","Lunar-Bloom","nefer|aino|collei|kuki","For limited rosters; lower damage.",true],
+
+  ["sandrone","Stellar-Conduct","sandrone|yae|odette|escoffier/qiqi@6/alyosha@6/qiqi/alyosha/sucrose","Yae and Odette are the core off-fielders; the last slot is flexible."],
+  ["sandrone","Stellar-Conduct","sandrone|alyosha@6|odette|vodyanitsa/escoffier/qiqi/sucrose/xilonen/nicole/beidou@6/diona@6","C6 Alyosha with Odette."],
+  ["sandrone","Stellar-Conduct","sandrone|yae|qiqi|escoffier/nicole/beidou@6/diona@6","Yae and Qiqi are the core off-fielders."],
+  ["sandrone","Stellar-Conduct","sandrone|yae|escoffier|nicole","Escoffier feeds her particles to Sandrone."],
+  ["sandrone","Stellar-Conduct","sandrone|beidou@6|diona@6|sucrose/xilonen","Works without Yae, Qiqi or Odette."],
+  ["sandrone","Lunar-Charged","sandrone|columbina|ineffa|yae","For content that calls for Lunar reactions."],
+  ["sandrone","Stellar-Conduct","sandrone|alyosha|charlotte/diona|sucrose","Alyosha applies Electro; Diona's shield prevents interruptions.",true],
+  ["sandrone","Stellar Swirl","sandrone|odette|sucrose|traveler-cryo","Sandrone's best Stellar Swirl team."],
+
+  ["lohen","Forward Melt","lohen|durin|nicole|citlali/xilonen/mona@4/sucrose","Durin's Pyro gets Melted by Lohen; Nicole buffs both."],
+  ["lohen","Forward Melt","lohen|mavuika|nicole|citlali/xilonen/iansan","Mavuika is the off-field Pyro damage dealer."],
+  ["lohen","Forward Melt","lohen|durin|albedo|xilonen","Albedo adds off-field Geo damage."],
+  ["lohen","Forward Melt","lohen|durin|escoffier|furina","Escoffier and Furina mostly buff Lohen."],
+  ["lohen","Melt","lohen|xiangling|bennett|kaeya/rosaria","Double Cryo lets Xiangling Melt more hits.",true],
+  ["lohen","Burnmelt","lohen|durin/mavuika/traveler-pyro|emilie|nicole","Generally Lohen's best Burnmelt team."],
+  ["lohen","Reverse Melt","lohen|xiangling|bennett|sucrose","Xiangling supplies Pyro and Bennett buffs.",true],
+  ["lohen","Freeze","lohen|escoffier|furina/vodyanitsa|mona","Escoffier and Furina keep Freeze up; Mona buffs."],
+  ["lohen","Freeze","lohen|escoffier|furina|skirk","Skirk quickswaps for her Burst."],
+  ["lohen","Mono Cryo","lohen|escoffier|albedo|xilonen","Good against Hydro or Pyro aura enemies."],
+  ["lohen","Freeze","lohen|sucrose/prune|xingqiu|kaeya","An accessible Freeze team.",true]
+];
+
+const TEAMS = RAW_TEAMS.map((t, i) => ({
+  id: "t" + i, src: t[0], arch: t[1], note: t[3], limited: !!t[4],
+  order: RAW_TEAMS.slice(0, i).filter(x => x[0] === t[0]).length,
+  slots: t[2].split("|").map(s => s.split("/").map(o => { const [id, c] = o.split("@"); return { id, minC: c ? +c : 0 }; }))
+}));
+
+function teamHasChar(t, id) { return t.slots.some(s => s.some(o => o.id === id)); }
+
+function ownedOptions(slot, roster) {
+  const seen = new Set(), out = [];
+  slot.forEach((o, rank) => {
+    if (roster[o.id] !== undefined && roster[o.id] >= o.minC && !seen.has(o.id)) { seen.add(o.id); out.push({ id: o.id, rank }); }
+  });
+  return out;
+}
+
+// Pick one distinct character per slot (anchor included), minimising how far down KQM's lists we go.
+function bestAssignment(slotOpts, anchor) {
+  let best = null, bestCost = Infinity;
+  const pick = [], used = new Set();
+  (function go(i, cost) {
+    if (cost >= bestCost) return;
+    if (i === slotOpts.length) { if (used.has(anchor)) { best = pick.slice(); bestCost = cost; } return; }
+    for (const o of slotOpts[i]) {
+      if (used.has(o.id)) continue;
+      used.add(o.id); pick[i] = o;
+      go(i + 1, cost + o.rank);
+      used.delete(o.id);
+    }
+  })(0, 0);
+  return best ? { picks: best, cost: bestCost } : null;
+}
+
+function findTeams(anchor, roster) {
+  const ready = [], almost = [];
+  for (const t of TEAMS) {
+    if (!teamHasChar(t, anchor)) continue;
+    const opts = t.slots.map(s => ownedOptions(s, roster));
+    const missing = opts.map((o, i) => o.length ? -1 : i).filter(i => i >= 0);
+    if (missing.length === 0) {
+      const a = bestAssignment(opts, anchor);
+      if (a) {
+        const picks = a.picks.map(p => p.id);
+        // A team built around the chosen character beats one where they fill a support slot.
+        const lead = picks[0] === anchor ? 0 : 0.5;
+        ready.push({ team: t, picks, opts, score: a.cost + t.order * 0.15 + (t.limited ? 2 : 0) + lead });
+      }
+    } else if (missing.length === 1) {
+      const keep = opts.filter((_, i) => i !== missing[0]);
+      const a = bestAssignment(keep, anchor);
+      if (a) {
+        const picks = []; let k = 0;
+        opts.forEach((_, i) => { picks.push(i === missing[0] ? null : a.picks[k++].id); });
+        almost.push({ team: t, picks, opts, missingSlot: missing[0], need: t.slots[missing[0]], score: a.cost + t.order * 0.15 + (t.limited ? 2 : 0) });
+      }
+    }
+  }
+  const dedupe = list => {
+    const seen = new Set();
+    return list.sort((a, b) => a.score - b.score).filter(r => {
+      const key = r.picks.filter(Boolean).slice().sort().join(",") + "|" + (r.missingSlot ?? "");
+      if (seen.has(key)) return false; seen.add(key); return true;
+    });
+  };
+  return { ready: dedupe(ready), almost: dedupe(almost) };
+}
+
+// Checks an AI reply against the candidates we sent. Throws on anything invented.
+function validateAi(value, cands, anchor) {
+  if (!value || !Array.isArray(value.teams) || value.teams.length < 1 || value.teams.length > 3) throw new Error("expected 1 to 3 teams");
+  const byId = Object.fromEntries(cands.map(c => [c.key, c]));
+  const seenTeams = new Set();
+  return value.teams.map(t => {
+    const c = byId[t.id];
+    if (!c) throw new Error("unknown team " + t.id);
+    if (seenTeams.has(t.id)) throw new Error("duplicate team"); seenTeams.add(t.id);
+    if (!Array.isArray(t.members) || t.members.length !== 4) throw new Error("team needs 4 members");
+    const used = new Set(), slotsUsed = new Set();
+    const members = t.members.map(m => {
+      const slot = m.slot, id = m.id;
+      if (!Number.isInteger(slot) || slot < 1 || slot > 4 || slotsUsed.has(slot)) throw new Error("bad slot");
+      if (!c.opts[slot - 1].some(o => o.id === id)) throw new Error(id + " is not an owned option for slot " + slot);
+      if (used.has(id)) throw new Error(id + " used twice");
+      if (typeof m.reason !== "string" || !m.reason.trim() || m.reason.length > 200) throw new Error("bad reason");
+      used.add(id); slotsUsed.add(slot);
+      return { slot, id, reason: m.reason.trim() };
+    }).sort((a, b) => a.slot - b.slot);
+    if (!used.has(anchor)) throw new Error("anchor missing");
+    const summary = typeof t.summary === "string" ? t.summary.trim().slice(0, 300) : "";
+    return { cand: c, members, summary };
+  });
+}
+
+function validateFallback(value, roster, anchor) {
+  if (!value || value.unknown) return null;
+  if (!Array.isArray(value.members) || value.members.length !== 4) throw new Error("team needs 4 members");
+  const used = new Set();
+  const members = value.members.map(m => {
+    if (!BY_ID[m.id] || roster[m.id] === undefined) throw new Error((m.id || "?") + " is not owned");
+    if (used.has(m.id)) throw new Error("duplicate member");
+    if (typeof m.reason !== "string" || !m.reason.trim() || m.reason.length > 200) throw new Error("bad reason");
+    used.add(m.id); return { id: m.id, reason: m.reason.trim() };
+  });
+  if (!used.has(anchor)) throw new Error("anchor missing");
+  return { members, summary: typeof value.summary === "string" ? value.summary.trim().slice(0, 300) : "" };
+}
+
+function matchName(raw) {
+  if (!raw) return null;
+  const norm = s => s.toLowerCase().normalize("NFKD").replace(/[^a-z]/g, "");
+  const n = norm(raw);
+  if (!n) return null;
+  for (const c of CHARS) { if (norm(c[0]) === n || norm(c[1]) === n) return c[0]; }
+  const alias = { childe: "tartaglia", raidenshogun: "raiden", ei: "raiden", kokomi: "kokomi", ayaka: "ayaka", ayato: "ayato", itto: "itto",
+    heizou: "heizou", kuki: "kuki", shinobu: "kuki", sara: "sara", kazuha: "kazuha", mizuki: "mizuki", yaemiko: "yae", yae: "yae",
+    hutao: "hutao", yunjin: "yunjin", lanyan: "lanyan", scaramouche: "wanderer", aether: "traveler-anemo", lumine: "traveler-anemo", traveler: "traveler-anemo",
+    kyryllchudomirovichflins: "flins", kaedeharakazuha: "kazuha", kamisatoayaka: "ayaka", kamisatoayato: "ayato", sangonomiyakokomi: "kokomi", shikanoinheizou: "heizou", yumemizukimizuki: "mizuki", aratakiitto: "itto", kujousara: "sara", kukishinobu: "kuki", nicolereeyn: "nicole", travelercryo: "traveler-cryo" };
+  if (alias[n]) return alias[n];
+  for (const c of CHARS) { const last = norm(c[1].split(" ").pop()); if (c[1].includes(" ") && last === n) return c[0]; }
+  return null;
+}
+/*LOGIC-END*/
+
+// ---------- UI ----------
+const $ = s => document.querySelector(s);
+const STORE_KEY = "gtf-roster-v1";
+const EXAMPLE = { "traveler-anemo":0,"traveler-geo":0,"traveler-electro":0,"traveler-dendro":0,"traveler-hydro":0,"traveler-pyro":0,
+  amber:6,kaeya:6,lisa:6,xiangling:6,bennett:5,xingqiu:6,fischl:6,sucrose:6,beidou:4,noelle:6,chongyun:4,collei:6,kirara:3,kuki:4,
+  aino:2,lanyan:3,kachina:4,iansan:2,ororon:1,chevreuse:3,layla:4,yaoyao:2,dahlia:1,charlotte:2,rosaria:2,
+  neuvillette:0,furina:0,kazuha:0,zhongli:0,nahida:0,xilonen:0,ineffa:0,columbina:0,mavuika:0,citlali:0,escoffier:0,
+  jean:1,mona:1,diluc:0,qiqi:0,keqing:1,tighnari:0,dehya:0,yelan:0,flins:0 };
+
+let roster = {};
+let isExample = false;
+let filterEl = null, ownedOnly = false, query = "";
+let currentCands = [];
+let lastAi = null;
+
+function loadRoster() {
+  try { const raw = localStorage.getItem(STORE_KEY); if (raw) { roster = JSON.parse(raw) || {}; isExample = false; return; } } catch (e) {}
+  roster = { ...EXAMPLE }; isExample = true;
+}
+function saveRoster() {
+  isExample = false;
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(roster)); } catch (e) {}
+}
+const elVar = el => `var(--${el})`;
+const esc = s => String(s).replace(/[&<>"']/g, ch => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[ch]));
+const nameOf = id => BY_ID[id] ? BY_ID[id].name : id;
+
+function renderFilters() {
+  const box = $("#el-filters");
+  box.innerHTML = ["all", ...ELEMENTS].map(e => `<button type="button" class="fchip" data-el="${e}" aria-pressed="${(e === "all" && !filterEl) || e === filterEl}">${e === "all" ? "All" : `<span class="dot" style="--el:${elVar(e)}"></span>${e[0].toUpperCase() + e.slice(1)}`}</button>`).join("");
+  box.querySelectorAll("button").forEach(b => b.onclick = () => { filterEl = b.dataset.el === "all" ? null : b.dataset.el; renderFilters(); renderGrid(); });
+}
+
+function renderGrid() {
+  const q = query.trim().toLowerCase();
+  const list = CHARS.map(c => BY_ID[c[0]])
+    .filter(c => !filterEl || c.el === filterEl)
+    .filter(c => !ownedOnly || roster[c.id] !== undefined)
+    .filter(c => !q || c.name.toLowerCase().includes(q))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  $("#grid").innerHTML = list.map(c => {
+    const on = roster[c.id] !== undefined;
+    return `<div class="char ${on ? "on" : ""}" style="--el:${elVar(c.el)}">
+      <button type="button" class="tog" data-id="${c.id}" aria-pressed="${on}" title="${esc(c.name)} · ${c.rarity}★ ${c.el} ${c.weapon}"><span class="dot ${c.rarity === 5 ? "star5" : ""}"></span><span class="n">${esc(c.name)}</span></button>
+      <button type="button" class="cons" data-id="${c.id}" aria-label="${esc(c.name)} constellation C${on ? roster[c.id] : 0}, click to change">C${on ? roster[c.id] : 0}</button>
+    </div>`;
+  }).join("") || `<p class="note">No characters match.</p>`;
+  $("#grid").querySelectorAll(".tog").forEach(b => b.onclick = () => {
+    const id = b.dataset.id;
+    if (roster[id] !== undefined) delete roster[id]; else roster[id] = 0;
+    saveRoster(); refreshAll();
+  });
+  $("#grid").querySelectorAll(".cons").forEach(b => b.onclick = () => {
+    const id = b.dataset.id; roster[id] = ((roster[id] || 0) + 1) % 7; saveRoster(); refreshAll();
+  });
+  $("#owned-count").textContent = `${Object.keys(roster).length} of ${CHARS.length} owned`;
+}
+
+function renderAnchor() {
+  const sel = $("#anchor");
+  const prev = sel.value;
+  const owned = Object.keys(roster).filter(id => BY_ID[id]).sort((a, b) => nameOf(a).localeCompare(nameOf(b)));
+  if (!owned.length) { sel.innerHTML = `<option value="">Mark some characters first</option>`; sel.disabled = true; return; }
+  sel.disabled = false;
+  const withTeams = owned.filter(id => TEAMS.some(t => teamHasChar(t, id)));
+  const without = owned.filter(id => !withTeams.includes(id));
+  sel.innerHTML = `<optgroup label="Has KQM teams">${withTeams.map(id => `<option value="${id}">${esc(nameOf(id))}</option>`).join("")}</optgroup>` +
+    (without.length ? `<optgroup label="No KQM teams yet (Claude can suggest)">${without.map(id => `<option value="${id}">${esc(nameOf(id))}</option>`).join("")}</optgroup>` : "");
+  const pref = owned.includes(prev) ? prev : (owned.includes("neuvillette") ? "neuvillette" : withTeams[0] || owned[0]);
+  sel.value = pref;
+}
+
+function memberCard(id, opts, slotIdx, anchor, reason, picks) {
+  const c = BY_ID[id];
+  const alts = opts ? opts[slotIdx].map(o => o.id).filter(x => x !== id && !picks.includes(x)) : [];
+  return `<div class="mem ${id === anchor ? "anchor" : ""}" style="--el:${elVar(c.el)}">
+    <span class="nm">${esc(c.name)}</span>
+    <span class="meta">${c.rarity}★ ${c.el} · C${roster[id] ?? 0}</span>
+    ${reason ? `<span class="why">${esc(reason)}</span>` : ""}
+    ${alts.length ? `<span class="alt">Or: ${alts.slice(0, 3).map(nameOf).map(esc).join(", ")}</span>` : ""}
+  </div>`;
+}
+function srcLine(t) {
+  const s = SOURCES[t.src];
+  return `<span class="src">From the <a href="${s.url}">KQM ${esc(s.guide)} quick guide</a>${s.ver ? ` (updated for ${s.ver})` : ""}</span>`;
+}
+
+function renderResults() {
+  const anchor = $("#anchor").value;
+  $("#example-note").classList.toggle("hidden", !isExample);
+  $("#ai-results").innerHTML = ""; $("#ai-status").textContent = ""; lastAi = null;
+  if (!anchor) { $("#results").innerHTML = ""; $("#almost").innerHTML = ""; $("#summary").innerHTML = ""; currentCands = []; return; }
+  const { ready, almost } = findTeams(anchor, roster);
+  currentCands = ready.slice(0, 8).map((r, i) => ({ ...r, key: "c" + (i + 1) }));
+  const total = TEAMS.filter(t => teamHasChar(t, anchor)).length;
+  $("#summary").innerHTML = `<span><strong>${ready.length}</strong> team${ready.length === 1 ? "" : "s"} you can build</span><span><strong>${total}</strong> KQM team${total === 1 ? "" : "s"} include ${esc(nameOf(anchor))}</span>`;
+  $("#kqm-label").classList.toggle("hidden", !ready.length);
+
+  $("#results").innerHTML = ready.slice(0, 12).map((r, i) => `<article class="team">
+      <div class="team-head"><h3>${esc(r.team.arch)} · ${r.picks.map(nameOf).map(esc).join(", ")}</h3>
+        <span class="row">${i === 0 ? `<span class="tag best">Top match</span>` : ""}${r.team.limited ? `<span class="tag budget">Budget</span>` : ""}</span></div>
+      <div class="members">${r.picks.map((id, s) => memberCard(id, r.opts, s, anchor, "", r.picks)).join("")}</div>
+      <p class="note">${esc(r.team.note)}</p>${srcLine(r.team)}
+    </article>`).join("") + (ready.length > 12 ? `<p class="note">${ready.length - 12} more teams match. They use options further down KQM's lists.</p>` : "");
+
+  const ai = $("#ai-box");
+  if (!ready.length) {
+    ai.classList.add("hidden");
+    const none = total === 0;
+    $("#results").innerHTML = `<div class="empty">
+      <p><strong>${none ? `KQM doesn't have teams for ${esc(nameOf(anchor))} in this site's data yet.` : `None of the ${total} KQM teams with ${esc(nameOf(anchor))} can be filled from your roster.`}</strong></p>
+      <p class="note">${none ? "Claude can suggest a team from your roster instead. It will be labeled as an AI suggestion, not a tested team." : "See the teams below that are one character away, or ask Claude for a suggestion from what you own."}</p>
+      <div class="row"><button type="button" class="btn primary" id="fallback-btn">Ask Claude for a team</button></div>
+      <p class="status" id="fallback-status" role="status" aria-live="polite"></p>
+      <div id="fallback-out" class="teams"></div></div>`;
+    $("#fallback-btn").onclick = () => runFallback(anchor);
+  } else {
+    ai.classList.remove("hidden");
+    $("#ai-text").textContent = `Want a short explanation of each pick? Claude can rank your top ${currentCands.length} teams for ${nameOf(anchor)} and say what each teammate does.`;
+  }
+
+  const close = almost.slice(0, 4);
+  $("#almost").innerHTML = close.length ? `<p class="section-label">One character away</p>` + close.map(r => {
+    const need = r.need.map(o => nameOf(o.id) + (o.minC ? ` (C${o.minC})` : "")).filter((v, i, a) => a.indexOf(v) === i);
+    return `<article class="team">
+      <div class="team-head"><h3>${esc(r.team.arch)} with ${r.picks.filter(Boolean).map(nameOf).map(esc).join(", ")}</h3></div>
+      <p class="need">Missing: <b>${need.map(esc).join(" or ")}</b></p>
+      <p class="note">${esc(r.team.note)}</p>${srcLine(r.team)}
+    </article>`;
+  }).join("") : "";
+}
+
+function refreshAll() { renderGrid(); renderAnchor(); renderResults(); }
+
+// ---------- Claude ----------
+let samplePromise = null;
+function getSample() {
+  if (!samplePromise) samplePromise = (async () => {
+    for (let i = 0; i < 50 && !(window.claude && typeof window.claude.use === "function"); i++) await new Promise(r => setTimeout(r, 200));
+    if (!(window.claude && typeof window.claude.use === "function")) return null;
+    try { return await window.claude.use("sample"); } catch (e) { return null; }
+  })();
+  return samplePromise;
+}
+function extractJson(text) {
+  const m = String(text || "").match(/\{[\s\S]*\}/);
+  if (!m) throw new Error("no JSON in reply");
+  return JSON.parse(m[0]);
+}
+async function askJson(sample, prompt, opts) {
+  if (typeof sample.json === "function") {
+    try { const v = await sample.json(prompt, opts); if (v && typeof v === "object") return v; } catch (e) { if (e && e.code) throw e; }
+  }
+  const r = await sample(prompt, opts);
+  return extractJson(r.text);
+}
+function aiErr(e) {
+  if (e && e.code === "not_granted") return "Claude isn't available for this page right now.";
+  if (e && e.code === "rate_limited") return "Claude is busy. Wait a minute and try again.";
+  return "Claude's answer didn't match your roster, so it wasn't shown. The KQM teams below are still accurate.";
+}
+
+function rosterText() {
+  return Object.keys(roster).filter(id => BY_ID[id]).map(id => `${id} (${nameOf(id)}): C${roster[id]}`).join("; ");
+}
+
+async function runRank() {
+  const anchor = $("#anchor").value;
+  const btn = $("#ai-btn"), st = $("#ai-status");
+  if (!currentCands.length) return;
+  const sample = await getSample();
+  if (!sample) { st.textContent = "Claude isn't available here. The KQM teams below still work."; return; }
+  btn.disabled = true; st.classList.remove("err"); st.textContent = "Asking Claude…";
+  const cands = currentCands.map(c => ({
+    id: c.key, archetype: c.team.arch, kqm_note: c.team.note, budget: c.team.limited,
+    slots: c.opts.map((o, i) => ({ slot: i + 1, pick: c.picks[i], owned_options_in_kqm_order: o.map(x => x.id) }))
+  }));
+  const prompt = `You rank Genshin Impact teams for a fan site. The candidate teams come from KeqingMains (KQM) quick guides and are the only source of truth. Your own knowledge of the game may be out of date: when it disagrees with the data, trust the data.
+
+Anchor character: ${anchor} (${nameOf(anchor)})
+Player's roster (id (name): constellation): ${rosterText()}
+
+CANDIDATES (JSON):
+${JSON.stringify(cands)}
+
+Rules:
+- Return 1 to 3 teams, chosen by "id" from CANDIDATES. Never invent a team.
+- For each slot, use a character from that slot's owned_options_in_kqm_order. Keep "pick" unless the player's constellations give a clear reason to change it. Every team must include the anchor, and no character may appear twice in a team.
+- Prefer teams earlier in the list unless the roster's constellations make another clearly better. Avoid returning two near-identical teams.
+- For each member write one short reason (max 20 words) saying what they do for the anchor in this team. Don't state numbers or percentages.
+- "summary": one sentence on why this team suits this player's roster.
+Reply with JSON only, in exactly this shape:
+{"teams":[{"id":"c1","summary":"...","members":[{"slot":1,"id":"...","reason":"..."},{"slot":2,"id":"...","reason":"..."},{"slot":3,"id":"...","reason":"..."},{"slot":4,"id":"...","reason":"..."}]}]}`;
+  try {
+    let result;
+    try { result = validateAi(await askJson(sample, prompt, { modelTier: "quick" }), currentCands, anchor); }
+    catch (e) {
+      if (e && e.code) throw e;
+      result = validateAi(await askJson(sample, prompt + `\n\nYour previous answer was rejected: ${e.message}. Follow the rules exactly.`, { modelTier: "default" }), currentCands, anchor);
+    }
+    if ($("#anchor").value !== anchor) return;
+    lastAi = result;
+    $("#ai-results").innerHTML = `<p class="section-label">Claude's picks for your roster</p>` + result.map((r, i) => {
+      const picks = r.members.map(m => m.id);
+      return `<article class="team ai">
+        <div class="team-head"><h3>${esc(r.cand.team.arch)} · ${picks.map(nameOf).map(esc).join(", ")}</h3><span class="tag best">#${i + 1}</span></div>
+        ${r.summary ? `<p class="note">${esc(r.summary)}</p>` : ""}
+        <div class="members">${r.members.map(m => memberCard(m.id, r.cand.opts, m.slot - 1, anchor, m.reason, picks)).join("")}</div>
+        ${srcLine(r.cand.team)}
+      </article>`;
+    }).join("");
+    st.textContent = "Explanations are written by Claude from KQM's team data. Check the linked guide for rotations.";
+  } catch (e) {
+    st.classList.add("err"); st.textContent = aiErr(e);
+  } finally { btn.disabled = false; }
+}
+
+async function runFallback(anchor) {
+  const st = $("#fallback-status"), out = $("#fallback-out"), btn = $("#fallback-btn");
+  const sample = await getSample();
+  if (!sample) { st.textContent = "Claude isn't available here."; return; }
+  btn.disabled = true; st.classList.remove("err"); st.textContent = "Asking Claude…";
+  const info = Object.keys(roster).filter(id => BY_ID[id]).map(id => { const c = BY_ID[id]; return `${id} (${c.name}, ${c.rarity}★ ${c.el} ${c.weapon}, C${roster[id]})`; }).join("; ");
+  const prompt = `Suggest one Genshin Impact team of 4 for ${nameOf(anchor)} (id: ${anchor}), using only characters this player owns.
+Owned characters: ${info}
+Rules:
+- Use only ids from the owned list. Include ${anchor}. No duplicates.
+- If you don't reliably know how ${nameOf(anchor)} plays (for example a character released after your training data), reply {"unknown":true} instead of guessing.
+- One short reason per member (max 20 words), no numbers. "summary": one sentence.
+Reply with JSON only: {"summary":"...","members":[{"id":"...","reason":"..."},{"id":"...","reason":"..."},{"id":"...","reason":"..."},{"id":"...","reason":"..."}]}`;
+  try {
+    const v = validateFallback(await askJson(sample, prompt, { modelTier: "default" }), roster, anchor);
+    if (!v) { st.textContent = `Claude doesn't know ${nameOf(anchor)}'s kit well enough to suggest a team. Check KQM's site for a guide.`; return; }
+    const picks = v.members.map(m => m.id);
+    out.innerHTML = `<article class="team ai">
+      <div class="team-head"><h3>AI suggestion · ${picks.map(nameOf).map(esc).join(", ")}</h3><span class="tag">Not from a KQM guide</span></div>
+      ${v.summary ? `<p class="note">${esc(v.summary)}</p>` : ""}
+      <div class="members">${v.members.map(m => memberCard(m.id, null, 0, anchor, m.reason, picks)).join("")}</div>
+    </article>`;
+    st.textContent = "Written by Claude from your roster, not tested by KQM. Treat it as a starting point.";
+  } catch (e) { st.classList.add("err"); st.textContent = aiErr(e).replace(" The KQM teams below are still accurate.", ""); }
+  finally { btn.disabled = false; }
+}
+
+async function importShots(files) {
+  const st = $("#import-status");
+  st.classList.remove("err");
+  const imgs = [...files].filter(f => f.type.startsWith("image/"));
+  if (!imgs.length) return;
+  const sample = await getSample();
+  if (!sample) { st.classList.add("err"); st.textContent = "Screenshot import needs Claude, which isn't available here. Mark your characters below instead."; return; }
+  let canImages = true;
+  try { const lim = await sample.limits(); canImages = !!(lim && lim.images); } catch (e) {}
+  if (!canImages) { st.classList.add("err"); st.textContent = "Claude can't read images on this page right now. Mark your characters below instead."; return; }
+  if (isExample) roster = {};
+  const names = CHARS.map(c => c[1]).join(", ");
+  let found = 0; const unknown = [];
+  for (let i = 0; i < imgs.length; i++) {
+    st.textContent = `Reading screenshot ${i + 1} of ${imgs.length}…`;
+    const prompt = `This is a screenshot from Genshin Impact or HoYoLAB showing a player's characters. List every playable character you can identify.
+Use exact names from this list: ${names}.
+For the Traveler, use "Traveler" plus the element shown if you can tell, e.g. "Traveler (Anemo)".
+If a constellation level (C0–C6) is visible for a character, include it; otherwise use null.
+Only list characters you can actually identify. Don't guess from silhouettes.
+Reply with JSON only: {"characters":[{"name":"...","constellation":null}]}`;
+    try {
+      const v = await askJson(sample, prompt, { images: [imgs[i]], modelTier: "default" });
+      for (const ch of (v && Array.isArray(v.characters) ? v.characters : [])) {
+        const id = matchName(ch && ch.name);
+        if (!id) { if (ch && ch.name) unknown.push(String(ch.name).slice(0, 40)); continue; }
+        const c = Number.isInteger(ch.constellation) && ch.constellation >= 0 && ch.constellation <= 6 ? ch.constellation : (roster[id] ?? 0);
+        if (roster[id] === undefined) found++;
+        roster[id] = Math.max(roster[id] ?? 0, c);
+      }
+    } catch (e) {
+      st.classList.add("err"); st.textContent = aiErr(e).startsWith("Claude's answer") ? `Couldn't read screenshot ${i + 1}. Try a clearer one, or mark characters below.` : aiErr(e);
+      saveRoster(); refreshAll(); return;
+    }
+  }
+  saveRoster(); refreshAll();
+  st.textContent = `Added ${found} character${found === 1 ? "" : "s"}. Check the list below and fix anything that's wrong.` + (unknown.length ? ` Not recognised: ${unknown.slice(0, 5).join(", ")}.` : "");
+}
+
+// ---------- wiring ----------
+loadRoster();
+renderFilters();
+refreshAll();
+$("#anchor").onchange = renderResults;
+$("#search").oninput = e => { query = e.target.value; renderGrid(); };
+$("#f-owned").onclick = e => { ownedOnly = !ownedOnly; e.currentTarget.setAttribute("aria-pressed", ownedOnly); renderGrid(); };
+$("#clear-roster").onclick = () => { roster = {}; saveRoster(); refreshAll(); $("#import-status").textContent = "Roster cleared."; };
+$("#ai-btn").onclick = runRank;
+$("#shots").onchange = e => { importShots(e.target.files); e.target.value = ""; };
+const drop = $("#drop");
+drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("over"); });
+drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+drop.addEventListener("drop", e => { e.preventDefault(); drop.classList.remove("over"); importShots(e.dataTransfer.files); });
+document.addEventListener("paste", e => {
+  const files = [...(e.clipboardData ? e.clipboardData.files : [])].filter(f => f.type.startsWith("image/"));
+  if (files.length) importShots(files);
+});
+// Outside claude.ai there is no Claude runtime: hide the AI features instead of showing dead buttons.
+getSample().then(s => {
+  if (s) return;
+  document.body.classList.add("no-ai");
+  $("#drop").innerHTML = `<p><strong>Mark your characters below.</strong> Screenshot import and Claude's explanations only work in the claude.ai version of this page.</p><div class="row"><button class="btn" id="clear-roster2" type="button">Clear all</button></div>`;
+  $("#clear-roster2").onclick = () => { roster = {}; saveRoster(); refreshAll(); };
+});
+</script>
+</body>
+</html>
