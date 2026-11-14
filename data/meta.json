@@ -1,82 +1,82 @@
 {
   "charactersUpdated": "2026-11-12",
-  "charactersChecked": "2026-11-13",
-  "teamsChecked": "2026-11-13",
+  "charactersChecked": "2026-11-14",
+  "teamsChecked": "2026-11-14",
   "guides": {
     "neuvillette": {
       "version": "Luna IV",
       "hash": "703b9f097024b98a",
-      "checked": "2026-11-13"
+      "checked": "2026-11-14"
     },
     "mavuika": {
       "version": "5.7",
       "hash": "93edaa3aaff1febc",
-      "checked": "2026-11-13"
+      "checked": "2026-11-14"
     },
     "arlecchino": {
       "version": "Luna VIII",
       "hash": "b785cdd8a807f924",
-      "checked": "2026-11-13"
+      "checked": "2026-11-14"
     },
     "flins": {
       "version": "Luna V",
       "hash": "b46ca9b869e41e8c",
-      "checked": "2026-11-13"
+      "checked": "2026-11-14"
     },
     "skirk": {
       "version": "7.1",
       "hash": "7e0fe20504aacc4d",
-      "checked": "2026-11-13"
+      "checked": "2026-11-14"
     },
     "raiden": {
       "version": "5.7",
       "hash": "84d1e12ffb748e41",
-      "checked": "2026-11-13"
+      "checked": "2026-11-14"
     },
     "keqing": {
       "version": null,
       "hash": "beb690d007a3a855",
-      "checked": "2026-11-13"
+      "checked": "2026-11-14"
     },
     "columbina": {
       "version": "7.0",
       "hash": "54e09c9db62c5f0e",
-      "checked": "2026-11-13"
+      "checked": "2026-11-14"
     },
     "varesa": {
       "version": "7.1",
       "hash": "5e475eca6935d716",
-      "checked": "2026-11-13"
+      "checked": "2026-11-14"
     },
     "zibai": {
       "version": "Luna VI",
       "hash": "1b95c1a52f0c40ec",
-      "checked": "2026-11-13"
+      "checked": "2026-11-14"
     },
     "varka": {
       "version": "7.1",
       "hash": "c9737fc1df104e7b",
-      "checked": "2026-11-13"
+      "checked": "2026-11-14"
     },
     "wriothesley": {
       "version": "7.0",
       "hash": "5da30c184938ebb2",
-      "checked": "2026-11-13"
+      "checked": "2026-11-14"
     },
     "nefer": {
       "version": "Luna II",
       "hash": "ffd879822a187705",
-      "checked": "2026-11-13"
+      "checked": "2026-11-14"
     },
     "sandrone": {
       "version": "7.1",
       "hash": "daf2b4a7f3af189d",
-      "checked": "2026-11-13"
+      "checked": "2026-11-14"
     },
     "lohen": {
       "version": "7.1",
       "hash": "9233ea65563d90af",
-      "checked": "2026-11-13"
+      "checked": "2026-11-14"
     }
   },
   "guideProbes": {
@@ -103,7 +103,19 @@
     "dahlia": "2026-11-13",
     "furina": "2026-11-13",
     "kokomi": "2026-11-13",
-    "mona": "2026-11-13"
+    "mona": "2026-11-13",
+    "mualani": "2026-11-14",
+    "nilou": "2026-11-14",
+    "sigewinne": "2026-11-14",
+    "tartaglia": "2026-11-14",
+    "vodyanitsa": "2026-11-14",
+    "xingqiu": "2026-11-14",
+    "yelan": "2026-11-14",
+    "alyosha": "2026-11-14",
+    "beidou": "2026-11-14",
+    "clorinde": "2026-11-14",
+    "cyno": "2026-11-14",
+    "dori": "2026-11-14"
   },
   "pendingGuides": {
     "amber": "https://keqingmains.com/q/amber-quickguide/",
@@ -128,6 +140,18 @@
     "dahlia": "https://keqingmains.com/q/dahlia-quickguide/",
     "furina": "https://keqingmains.com/q/furina-quickguide/",
     "kokomi": "https://keqingmains.com/q/kokomi-quickguide/",
-    "mona": "https://keqingmains.com/q/mona-quickguide/"
+    "mona": "https://keqingmains.com/q/mona-quickguide/",
+    "mualani": "https://keqingmains.com/q/mualani-quickguide/",
+    "nilou": "https://keqingmains.com/q/nilou-quickguide/",
+    "sigewinne": "https://keqingmains.com/q/sigewinne-quickguide/",
+    "tartaglia": "https://keqingmains.com/q/tartaglia-quickguide/",
+    "vodyanitsa": "https://keqingmains.com/q/vodyanitsa-quickguide/",
+    "xingqiu": "https://keqingmains.com/q/xingqiu-quickguide/",
+    "yelan": "https://keqingmains.com/q/yelan-quickguide/",
+    "alyosha": "https://keqingmains.com/q/alyosha-quickguide/",
+    "beidou": "https://keqingmains.com/q/beidou-quickguide/",
+    "clorinde": "https://keqingmains.com/q/clorinde-quickguide/",
+    "cyno": "https://keqingmains.com/q/cyno-quickguide/",
+    "dori": "https://keqingmains.com/q/dori-quickguide/"
   }
 }
