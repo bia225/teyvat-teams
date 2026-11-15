@@ -1,82 +1,82 @@
 {
   "charactersUpdated": "2026-11-12",
-  "charactersChecked": "2026-11-14",
-  "teamsChecked": "2026-11-14",
+  "charactersChecked": "2026-11-15",
+  "teamsChecked": "2026-11-15",
   "guides": {
     "neuvillette": {
       "version": "Luna IV",
       "hash": "703b9f097024b98a",
-      "checked": "2026-11-14"
+      "checked": "2026-11-15"
     },
     "mavuika": {
       "version": "5.7",
       "hash": "93edaa3aaff1febc",
-      "checked": "2026-11-14"
+      "checked": "2026-11-15"
     },
     "arlecchino": {
       "version": "Luna VIII",
       "hash": "b785cdd8a807f924",
-      "checked": "2026-11-14"
+      "checked": "2026-11-15"
     },
     "flins": {
       "version": "Luna V",
       "hash": "b46ca9b869e41e8c",
-      "checked": "2026-11-14"
+      "checked": "2026-11-15"
     },
     "skirk": {
       "version": "7.1",
       "hash": "7e0fe20504aacc4d",
-      "checked": "2026-11-14"
+      "checked": "2026-11-15"
     },
     "raiden": {
       "version": "5.7",
       "hash": "84d1e12ffb748e41",
-      "checked": "2026-11-14"
+      "checked": "2026-11-15"
     },
     "keqing": {
       "version": null,
       "hash": "beb690d007a3a855",
-      "checked": "2026-11-14"
+      "checked": "2026-11-15"
     },
     "columbina": {
       "version": "7.0",
       "hash": "54e09c9db62c5f0e",
-      "checked": "2026-11-14"
+      "checked": "2026-11-15"
     },
     "varesa": {
       "version": "7.1",
       "hash": "5e475eca6935d716",
-      "checked": "2026-11-14"
+      "checked": "2026-11-15"
     },
     "zibai": {
       "version": "Luna VI",
       "hash": "1b95c1a52f0c40ec",
-      "checked": "2026-11-14"
+      "checked": "2026-11-15"
     },
     "varka": {
       "version": "7.1",
       "hash": "c9737fc1df104e7b",
-      "checked": "2026-11-14"
+      "checked": "2026-11-15"
     },
     "wriothesley": {
       "version": "7.0",
       "hash": "5da30c184938ebb2",
-      "checked": "2026-11-14"
+      "checked": "2026-11-15"
     },
     "nefer": {
       "version": "Luna II",
       "hash": "ffd879822a187705",
-      "checked": "2026-11-14"
+      "checked": "2026-11-15"
     },
     "sandrone": {
       "version": "7.1",
       "hash": "daf2b4a7f3af189d",
-      "checked": "2026-11-14"
+      "checked": "2026-11-15"
     },
     "lohen": {
       "version": "7.1",
       "hash": "9233ea65563d90af",
-      "checked": "2026-11-14"
+      "checked": "2026-11-15"
     }
   },
   "guideProbes": {
@@ -115,7 +115,19 @@
     "beidou": "2026-11-14",
     "clorinde": "2026-11-14",
     "cyno": "2026-11-14",
-    "dori": "2026-11-14"
+    "dori": "2026-11-14",
+    "fischl": "2026-11-15",
+    "iansan": "2026-11-15",
+    "ineffa": "2026-11-15",
+    "kuki": "2026-11-15",
+    "lisa": "2026-11-15",
+    "mitya": "2026-11-15",
+    "ororon": "2026-11-15",
+    "razor": "2026-11-15",
+    "sara": "2026-11-15",
+    "sethos": "2026-11-15",
+    "valeriy": "2026-11-15",
+    "yae": "2026-11-15"
   },
   "pendingGuides": {
     "amber": "https://keqingmains.com/q/amber-quickguide/",
@@ -152,6 +164,16 @@
     "beidou": "https://keqingmains.com/q/beidou-quickguide/",
     "clorinde": "https://keqingmains.com/q/clorinde-quickguide/",
     "cyno": "https://keqingmains.com/q/cyno-quickguide/",
-    "dori": "https://keqingmains.com/q/dori-quickguide/"
+    "dori": "https://keqingmains.com/q/dori-quickguide/",
+    "fischl": "https://keqingmains.com/q/fischl-quickguide/",
+    "iansan": "https://keqingmains.com/q/iansan-quickguide/",
+    "ineffa": "https://keqingmains.com/q/ineffa-quickguide/",
+    "kuki": "https://keqingmains.com/q/shinobu-quickguide/",
+    "lisa": "https://keqingmains.com/q/lisa-quickguide/",
+    "ororon": "https://keqingmains.com/q/ororon-quickguide/",
+    "razor": "https://keqingmains.com/q/razor-quickguide/",
+    "sara": "https://keqingmains.com/q/sara-quickguide/",
+    "sethos": "https://keqingmains.com/q/sethos-quickguide/",
+    "yae": "https://keqingmains.com/q/yae-quickguide/"
   }
 }
