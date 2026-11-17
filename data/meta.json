@@ -1,82 +1,82 @@
 {
   "charactersUpdated": "2026-11-12",
-  "charactersChecked": "2026-11-16",
-  "teamsChecked": "2026-11-16",
+  "charactersChecked": "2026-11-17",
+  "teamsChecked": "2026-11-17",
   "guides": {
     "neuvillette": {
       "version": "Luna IV",
       "hash": "703b9f097024b98a",
-      "checked": "2026-11-16"
+      "checked": "2026-11-17"
     },
     "mavuika": {
       "version": "5.7",
       "hash": "93edaa3aaff1febc",
-      "checked": "2026-11-16"
+      "checked": "2026-11-17"
     },
     "arlecchino": {
       "version": "Luna VIII",
       "hash": "b785cdd8a807f924",
-      "checked": "2026-11-16"
+      "checked": "2026-11-17"
     },
     "flins": {
       "version": "Luna V",
       "hash": "b46ca9b869e41e8c",
-      "checked": "2026-11-16"
+      "checked": "2026-11-17"
     },
     "skirk": {
       "version": "7.1",
       "hash": "7e0fe20504aacc4d",
-      "checked": "2026-11-16"
+      "checked": "2026-11-17"
     },
     "raiden": {
       "version": "5.7",
       "hash": "84d1e12ffb748e41",
-      "checked": "2026-11-16"
+      "checked": "2026-11-17"
     },
     "keqing": {
       "version": null,
       "hash": "beb690d007a3a855",
-      "checked": "2026-11-16"
+      "checked": "2026-11-17"
     },
     "columbina": {
       "version": "7.0",
       "hash": "54e09c9db62c5f0e",
-      "checked": "2026-11-16"
+      "checked": "2026-11-17"
     },
     "varesa": {
       "version": "7.1",
       "hash": "5e475eca6935d716",
-      "checked": "2026-11-16"
+      "checked": "2026-11-17"
     },
     "zibai": {
       "version": "Luna VI",
       "hash": "1b95c1a52f0c40ec",
-      "checked": "2026-11-16"
+      "checked": "2026-11-17"
     },
     "varka": {
       "version": "7.1",
       "hash": "c9737fc1df104e7b",
-      "checked": "2026-11-16"
+      "checked": "2026-11-17"
     },
     "wriothesley": {
       "version": "7.0",
       "hash": "5da30c184938ebb2",
-      "checked": "2026-11-16"
+      "checked": "2026-11-17"
     },
     "nefer": {
       "version": "Luna II",
       "hash": "ffd879822a187705",
-      "checked": "2026-11-16"
+      "checked": "2026-11-17"
     },
     "sandrone": {
       "version": "7.1",
       "hash": "daf2b4a7f3af189d",
-      "checked": "2026-11-16"
+      "checked": "2026-11-17"
     },
     "lohen": {
       "version": "7.1",
       "hash": "9233ea65563d90af",
-      "checked": "2026-11-16"
+      "checked": "2026-11-17"
     }
   },
   "guideProbes": {
@@ -139,7 +139,19 @@
     "freminet": "2026-11-16",
     "ganyu": "2026-11-16",
     "kaeya": "2026-11-16",
-    "layla": "2026-11-16"
+    "layla": "2026-11-16",
+    "mika": "2026-11-17",
+    "odette": "2026-11-17",
+    "qiqi": "2026-11-17",
+    "rosaria": "2026-11-17",
+    "shenhe": "2026-11-17",
+    "chasca": "2026-11-17",
+    "faruzan": "2026-11-17",
+    "heizou": "2026-11-17",
+    "ifa": "2026-11-17",
+    "jahoda": "2026-11-17",
+    "jean": "2026-11-17",
+    "kazuha": "2026-11-17"
   },
   "pendingGuides": {
     "amber": "https://keqingmains.com/q/amber-quickguide/",
@@ -198,6 +210,18 @@
     "freminet": "https://keqingmains.com/q/freminet-quickguide/",
     "ganyu": "https://keqingmains.com/q/ganyu-quickguide/",
     "kaeya": "https://keqingmains.com/q/kaeya-quickguide/",
-    "layla": "https://keqingmains.com/q/layla-quickguide/"
+    "layla": "https://keqingmains.com/q/layla-quickguide/",
+    "mika": "https://keqingmains.com/q/mika-quickguide/",
+    "odette": "https://keqingmains.com/q/odette-quickguide/",
+    "qiqi": "https://keqingmains.com/q/qiqi-quickguide/",
+    "rosaria": "https://keqingmains.com/q/rosaria-quickguide/",
+    "shenhe": "https://keqingmains.com/q/shenhe-quickguide/",
+    "chasca": "https://keqingmains.com/q/chasca-quickguide/",
+    "faruzan": "https://keqingmains.com/q/faruzan-quickguide/",
+    "heizou": "https://keqingmains.com/q/heizou-quickguide/",
+    "ifa": "https://keqingmains.com/q/ifa-quickguide/",
+    "jahoda": "https://keqingmains.com/q/jahoda-quickguide/",
+    "jean": "https://keqingmains.com/q/jean-quickguide/",
+    "kazuha": "https://keqingmains.com/q/kazuha-quickguide/"
   }
 }
