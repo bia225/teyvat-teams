@@ -1,82 +1,82 @@
 {
   "charactersUpdated": "2026-11-12",
-  "charactersChecked": "2026-11-17",
-  "teamsChecked": "2026-11-17",
+  "charactersChecked": "2026-11-18",
+  "teamsChecked": "2026-11-18",
   "guides": {
     "neuvillette": {
       "version": "Luna IV",
       "hash": "703b9f097024b98a",
-      "checked": "2026-11-17"
+      "checked": "2026-11-18"
     },
     "mavuika": {
       "version": "5.7",
       "hash": "93edaa3aaff1febc",
-      "checked": "2026-11-17"
+      "checked": "2026-11-18"
     },
     "arlecchino": {
       "version": "Luna VIII",
       "hash": "b785cdd8a807f924",
-      "checked": "2026-11-17"
+      "checked": "2026-11-18"
     },
     "flins": {
       "version": "Luna V",
       "hash": "b46ca9b869e41e8c",
-      "checked": "2026-11-17"
+      "checked": "2026-11-18"
     },
     "skirk": {
       "version": "7.1",
       "hash": "7e0fe20504aacc4d",
-      "checked": "2026-11-17"
+      "checked": "2026-11-18"
     },
     "raiden": {
       "version": "5.7",
       "hash": "84d1e12ffb748e41",
-      "checked": "2026-11-17"
+      "checked": "2026-11-18"
     },
     "keqing": {
       "version": null,
       "hash": "beb690d007a3a855",
-      "checked": "2026-11-17"
+      "checked": "2026-11-18"
     },
     "columbina": {
       "version": "7.0",
       "hash": "54e09c9db62c5f0e",
-      "checked": "2026-11-17"
+      "checked": "2026-11-18"
     },
     "varesa": {
       "version": "7.1",
       "hash": "5e475eca6935d716",
-      "checked": "2026-11-17"
+      "checked": "2026-11-18"
     },
     "zibai": {
       "version": "Luna VI",
       "hash": "1b95c1a52f0c40ec",
-      "checked": "2026-11-17"
+      "checked": "2026-11-18"
     },
     "varka": {
       "version": "7.1",
       "hash": "c9737fc1df104e7b",
-      "checked": "2026-11-17"
+      "checked": "2026-11-18"
     },
     "wriothesley": {
       "version": "7.0",
       "hash": "5da30c184938ebb2",
-      "checked": "2026-11-17"
+      "checked": "2026-11-18"
     },
     "nefer": {
       "version": "Luna II",
       "hash": "ffd879822a187705",
-      "checked": "2026-11-17"
+      "checked": "2026-11-18"
     },
     "sandrone": {
       "version": "7.1",
       "hash": "daf2b4a7f3af189d",
-      "checked": "2026-11-17"
+      "checked": "2026-11-18"
     },
     "lohen": {
       "version": "7.1",
       "hash": "9233ea65563d90af",
-      "checked": "2026-11-17"
+      "checked": "2026-11-18"
     }
   },
   "guideProbes": {
@@ -151,7 +151,19 @@
     "ifa": "2026-11-17",
     "jahoda": "2026-11-17",
     "jean": "2026-11-17",
-    "kazuha": "2026-11-17"
+    "kazuha": "2026-11-17",
+    "lanyan": "2026-11-18",
+    "lynette": "2026-11-18",
+    "mizuki": "2026-11-18",
+    "prune": "2026-11-18",
+    "sayu": "2026-11-18",
+    "sucrose": "2026-11-18",
+    "venti": "2026-11-18",
+    "vesna": "2026-11-18",
+    "wanderer": "2026-11-18",
+    "xianyun": "2026-11-18",
+    "xiao": "2026-11-18",
+    "albedo": "2026-11-18"
   },
   "pendingGuides": {
     "amber": "https://keqingmains.com/q/amber-quickguide/",
@@ -222,6 +234,17 @@
     "ifa": "https://keqingmains.com/q/ifa-quickguide/",
     "jahoda": "https://keqingmains.com/q/jahoda-quickguide/",
     "jean": "https://keqingmains.com/q/jean-quickguide/",
-    "kazuha": "https://keqingmains.com/q/kazuha-quickguide/"
+    "kazuha": "https://keqingmains.com/q/kazuha-quickguide/",
+    "lanyan": "https://keqingmains.com/q/lan-yan-quickguide/",
+    "lynette": "https://keqingmains.com/q/lynette-quickguide/",
+    "mizuki": "https://keqingmains.com/q/mizuki-quickguide/",
+    "prune": "https://keqingmains.com/q/prune-quickguide/",
+    "sayu": "https://keqingmains.com/q/sayu-quickguide/",
+    "sucrose": "https://keqingmains.com/q/sucrose-quickguide/",
+    "venti": "https://keqingmains.com/q/venti-quickguide/",
+    "wanderer": "https://keqingmains.com/q/wanderer-quickguide/",
+    "xianyun": "https://keqingmains.com/q/xianyun-quickguide/",
+    "xiao": "https://keqingmains.com/q/xiao-quickguide/",
+    "albedo": "https://keqingmains.com/q/albedo-quickguide/"
   }
 }
