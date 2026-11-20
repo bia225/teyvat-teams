@@ -1,82 +1,82 @@
 {
   "charactersUpdated": "2026-11-12",
-  "charactersChecked": "2026-11-19",
-  "teamsChecked": "2026-11-19",
+  "charactersChecked": "2026-11-20",
+  "teamsChecked": "2026-11-20",
   "guides": {
     "neuvillette": {
       "version": "Luna IV",
       "hash": "703b9f097024b98a",
-      "checked": "2026-11-19"
+      "checked": "2026-11-20"
     },
     "mavuika": {
       "version": "5.7",
       "hash": "93edaa3aaff1febc",
-      "checked": "2026-11-19"
+      "checked": "2026-11-20"
     },
     "arlecchino": {
       "version": "Luna VIII",
       "hash": "b785cdd8a807f924",
-      "checked": "2026-11-19"
+      "checked": "2026-11-20"
     },
     "flins": {
       "version": "Luna V",
       "hash": "b46ca9b869e41e8c",
-      "checked": "2026-11-19"
+      "checked": "2026-11-20"
     },
     "skirk": {
       "version": "7.1",
       "hash": "7e0fe20504aacc4d",
-      "checked": "2026-11-19"
+      "checked": "2026-11-20"
     },
     "raiden": {
       "version": "5.7",
       "hash": "84d1e12ffb748e41",
-      "checked": "2026-11-19"
+      "checked": "2026-11-20"
     },
     "keqing": {
       "version": null,
       "hash": "beb690d007a3a855",
-      "checked": "2026-11-19"
+      "checked": "2026-11-20"
     },
     "columbina": {
       "version": "7.0",
       "hash": "54e09c9db62c5f0e",
-      "checked": "2026-11-19"
+      "checked": "2026-11-20"
     },
     "varesa": {
       "version": "7.1",
       "hash": "5e475eca6935d716",
-      "checked": "2026-11-19"
+      "checked": "2026-11-20"
     },
     "zibai": {
       "version": "Luna VI",
       "hash": "1b95c1a52f0c40ec",
-      "checked": "2026-11-19"
+      "checked": "2026-11-20"
     },
     "varka": {
       "version": "7.1",
       "hash": "c9737fc1df104e7b",
-      "checked": "2026-11-19"
+      "checked": "2026-11-20"
     },
     "wriothesley": {
       "version": "7.0",
       "hash": "5da30c184938ebb2",
-      "checked": "2026-11-19"
+      "checked": "2026-11-20"
     },
     "nefer": {
       "version": "Luna II",
       "hash": "ffd879822a187705",
-      "checked": "2026-11-19"
+      "checked": "2026-11-20"
     },
     "sandrone": {
       "version": "7.1",
       "hash": "daf2b4a7f3af189d",
-      "checked": "2026-11-19"
+      "checked": "2026-11-20"
     },
     "lohen": {
       "version": "7.1",
       "hash": "9233ea65563d90af",
-      "checked": "2026-11-19"
+      "checked": "2026-11-20"
     }
   },
   "guideProbes": {
@@ -175,7 +175,18 @@
     "noelle": "2026-11-19",
     "xilonen": "2026-11-19",
     "yunjin": "2026-11-19",
-    "zhongli": "2026-11-19"
+    "zhongli": "2026-11-19",
+    "alhaitham": "2026-11-20",
+    "baizhu": "2026-11-20",
+    "collei": "2026-11-20",
+    "emilie": "2026-11-20",
+    "kaveh": "2026-11-20",
+    "kinich": "2026-11-20",
+    "kirara": "2026-11-20",
+    "lauma": "2026-11-20",
+    "nahida": "2026-11-20",
+    "tighnari": "2026-11-20",
+    "yaoyao": "2026-11-20"
   },
   "pendingGuides": {
     "amber": "https://keqingmains.com/q/amber-quickguide/",
@@ -269,6 +280,17 @@
     "noelle": "https://keqingmains.com/q/noelle-quickguide/",
     "xilonen": "https://keqingmains.com/q/xilonen-quickguide/",
     "yunjin": "https://keqingmains.com/q/yunjin-quickguide/",
-    "zhongli": "https://keqingmains.com/q/zhongli-quickguide/"
+    "zhongli": "https://keqingmains.com/q/zhongli-quickguide/",
+    "alhaitham": "https://keqingmains.com/q/alhaitham-quickguide/",
+    "baizhu": "https://keqingmains.com/q/baizhu-quickguide/",
+    "collei": "https://keqingmains.com/q/collei-quickguide/",
+    "emilie": "https://keqingmains.com/q/emilie-quickguide/",
+    "kaveh": "https://keqingmains.com/q/kaveh-quickguide/",
+    "kinich": "https://keqingmains.com/q/kinich-quickguide/",
+    "kirara": "https://keqingmains.com/q/kirara-quickguide/",
+    "lauma": "https://keqingmains.com/q/lauma-quickguide/",
+    "nahida": "https://keqingmains.com/q/nahida-quickguide/",
+    "tighnari": "https://keqingmains.com/q/tighnari-quickguide/",
+    "yaoyao": "https://keqingmains.com/q/yaoyao-quickguide/"
   }
 }
